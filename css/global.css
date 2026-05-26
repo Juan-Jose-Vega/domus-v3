@@ -1,0 +1,648 @@
+/*
+  ============================================================
+  global.css — Estilos Globales del Sistema RentaAdmin
+  ============================================================
+  Este archivo define:
+  - Variables CSS (design tokens: colores, fuentes, sombras)
+  - Reset básico (normalización cross-browser)
+  - Clases utilitarias reutilizables
+  - Animaciones y transiciones globales
+
+  IMPORTANTE: Este archivo se carga en TODAS las páginas.
+  Es la base del sistema de diseño.
+  ============================================================
+*/
+
+/* ============================================================
+   VARIABLES CSS (Design Tokens)
+   ============================================================
+   Las variables CSS (custom properties) se definen en :root
+   para que sean accesibles desde cualquier selector.
+   Las usamos en lugar de valores hardcoded para mantener
+   consistencia y facilitar cambios de tema (dark mode).
+   ============================================================ */
+
+:root {
+  /* --- Paleta Principal --- */
+  --color-primary:        #6366f1;   /* Indigo — color de marca */
+  --color-primary-light:  #818cf8;
+  --color-primary-dark:   #4f46e5;
+  --color-primary-glow:   rgba(99, 102, 241, 0.25);
+
+  --color-secondary:      #8b5cf6;   /* Violeta — acento */
+  --color-accent:         #06b6d4;   /* Cyan — alertas info */
+
+  /* --- Estados / Semáforo de pagos --- */
+  --color-success:        #10b981;   /* Verde → Al día */
+  --color-success-bg:     rgba(16, 185, 129, 0.12);
+  --color-warning:        #f59e0b;   /* Amarillo → Próximo a vencer */
+  --color-warning-bg:     rgba(245, 158, 11, 0.12);
+  --color-danger:         #ef4444;   /* Rojo → Atrasado */
+  --color-danger-bg:      rgba(239, 68, 68, 0.12);
+  --color-info:           #3b82f6;   /* Azul → Información */
+  --color-info-bg:        rgba(59, 130, 246, 0.12);
+
+  /* --- Fondos (Dark Mode por defecto) --- */
+  --bg-base:              #0a0a0f;   /* Fondo más oscuro */
+  --bg-surface:           #111118;   /* Cards, panels */
+  --bg-elevated:          #1a1a24;   /* Elementos elevados */
+  --bg-overlay:           #22222e;   /* Modales, dropdowns */
+  --bg-hover:             rgba(255,255,255,0.04);
+  --bg-active:            rgba(99, 102, 241, 0.10);
+  --bg-sidebar:           #0d0d15;   /* Sidebar más oscuro */
+
+  /* --- Bordes --- */
+  --border-subtle:        rgba(255,255,255,0.06);
+  --border-default:       rgba(255,255,255,0.10);
+  --border-strong:        rgba(255,255,255,0.18);
+  --border-primary:       rgba(99, 102, 241, 0.40);
+
+  /* --- Texto --- */
+  --text-primary:         #f1f5f9;   /* Texto principal */
+  --text-secondary:       #94a3b8;   /* Texto secundario */
+  --text-muted:           #475569;   /* Texto apagado */
+  --text-inverse:         #0a0a0f;   /* Texto sobre fondos claros */
+
+  /* --- Tipografía --- */
+  --font-heading:         'Sora', sans-serif;
+  --font-body:            'DM Sans', sans-serif;
+  --font-mono:            'DM Mono', monospace;
+
+  /* --- Espaciado (escala 4px) --- */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* --- Bordes redondeados --- */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* --- Sombras --- */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-lg:   0 10px 40px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,0.7);
+  --shadow-glow: 0 0 30px var(--color-primary-glow);
+
+  /* --- Transiciones --- */
+  --transition-fast:    150ms ease;
+  --transition-normal:  250ms ease;
+  --transition-slow:    400ms ease;
+
+  /* --- Sidebar --- */
+  --sidebar-width:         260px;
+  --sidebar-collapsed:     68px;
+
+  /* --- Topbar --- */
+  --topbar-height:         64px;
+
+  /* --- Z-index stack --- */
+  --z-base:     1;
+  --z-dropdown: 100;
+  --z-modal:    200;
+  --z-toast:    300;
+  --z-sidebar:  400;
+}
+
+/* ============================================================
+   RESET Y NORMALIZACIÓN
+   ============================================================
+   Eliminamos márgenes, paddings y estilos por defecto del
+   navegador para tener control total sobre el diseño.
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;  /* El padding no aumenta el tamaño total */
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;    /* Base para unidades rem */
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;    /* 15px */
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Imágenes responsive por defecto */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Botones heredan fuente del body */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Inputs heredan fuente del body */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Links sin subrayado por defecto */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Listas sin estilo por defecto */
+ul, ol {
+  list-style: none;
+}
+
+/* ============================================================
+   CLASES UTILITARIAS
+   ============================================================
+   Clases pequeñas y reutilizables que aplicamos directamente
+   en el HTML para ajustes rápidos.
+   ============================================================ */
+
+/* Flexbox helpers */
+.flex         { display: flex; }
+.flex-center  { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col     { display: flex; flex-direction: column; }
+.flex-wrap    { flex-wrap: wrap; }
+.gap-2        { gap: var(--space-2); }
+.gap-3        { gap: var(--space-3); }
+.gap-4        { gap: var(--space-4); }
+
+/* Texto */
+.text-sm      { font-size: 0.8125rem; }
+.text-xs      { font-size: 0.75rem; }
+.text-muted   { color: var(--text-secondary); }
+.text-center  { text-align: center; }
+.font-mono    { font-family: var(--font-mono); }
+.font-heading { font-family: var(--font-heading); }
+
+/* Visibilidad */
+.hidden       { display: none !important; }
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+/* Truncar texto largo */
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   BADGES (Etiquetas de estado)
+   ============================================================
+   Usamos estas clases para mostrar el estado de pagos,
+   contratos y reclamos con colores semáforo.
+   ============================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Verde → Pagado / Al día / Solucionado */
+.badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Amarillo → Pendiente / Próximo a vencer */
+.badge--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* Rojo → Atrasado / Urgente */
+.badge--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* Azul → Info / En proceso */
+.badge--info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* Gris → Inactivo / Neutro */
+.badge--neutral {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+/* ============================================================
+   BOTONES GENERALES
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: white;
+}
+.btn--primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--color-primary-glow);
+}
+
+.btn--secondary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+.btn--secondary:hover {
+  background: var(--bg-overlay);
+  border-color: var(--border-strong);
+}
+
+.btn--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.btn--danger:hover {
+  background: rgba(239, 68, 68, 0.20);
+}
+
+.btn--sm {
+  padding: 5px 12px;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn--ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   CARDS GENERALES
+   ============================================================ */
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: border-color var(--transition-normal);
+}
+
+.card:hover {
+  border-color: var(--border-default);
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.card__title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   FORMULARIOS GENERALES
+   ============================================================ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-select option {
+  background: var(--bg-overlay);
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  display: none;
+}
+
+.form-error.visible {
+  display: block;
+}
+
+/* ============================================================
+   TABLAS MODERNAS
+   ============================================================ */
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead {
+  background: var(--bg-elevated);
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition-fast);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: var(--bg-hover);
+}
+
+/* ============================================================
+   MODALES
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(20px) scale(0.97);
+  transition: transform var(--transition-normal);
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-overlay.active .modal {
+  transform: translateY(0) scale(1);
+}
+
+.modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.modal__title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.modal__close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modal__footer {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ============================================================
+   TOAST / NOTIFICACIONES FLASH
+   ============================================================
+   Las notificaciones se insertan dinámicamente con JS
+   y se eliminan automáticamente después de unos segundos.
+   ============================================================ */
+
+#toast-container {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px 18px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  pointer-events: all;
+  animation: toastIn 0.35s ease forwards;
+  min-width: 280px;
+  max-width: 380px;
+}
+
+.toast.removing {
+  animation: toastOut 0.3s ease forwards;
+}
+
+.toast--success { border-left: 3px solid var(--color-success); }
+.toast--warning { border-left: 3px solid var(--color-warning); }
+.toast--danger  { border-left: 3px solid var(--color-danger); }
+.toast--info    { border-left: 3px solid var(--color-info); }
+
+.toast-icon { flex-shrink: 0; }
+.toast--success .toast-icon { color: var(--color-success); }
+.toast--warning .toast-icon { color: var(--color-warning); }
+.toast--danger  .toast-icon { color: var(--color-danger); }
+.toast--info    .toast-icon { color: var(--color-info); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(100px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(100px); }
+}
+
+/* ============================================================
+   SCROLLBAR PERSONALIZADA (webkit)
+   ============================================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ============================================================
+   ANIMACIONES GLOBALES
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in { animation: fadeIn 0.4s ease; }
+.animate-slide-up { animation: slideUp 0.4s ease; }

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domus Alquilia — Panel Administrador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/properties.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar" id="sidebar">
+
+    <button class="sidebar-toggle" id="sidebarToggle">
+      <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+    </button>
+
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="url(#lg2)"/>
+          <path d="M8 28V14l10-8 10 8v14H22v-8h-8v8H8z" fill="white"/>
+          <defs>
+            <linearGradient id="lg2" x1="0" y1="0" x2="36" y2="36">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">Domus Alquilia</div>
+        <div class="sidebar-logo-sub">Administrador</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Principal</div>
+      <div class="nav-item active" data-section="dashboard" data-tooltip="Dashboard">
+        <i data-lucide="layout-dashboard" class="nav-item-icon"></i>
+        <span class="nav-item-text">Dashboard</span>
+      </div>
+
+      <div class="sidebar-section-label">Gestión</div>
+      <div class="nav-item" data-section="inquilinos" data-tooltip="Inquilinos">
+        <i data-lucide="users" class="nav-item-icon"></i>
+        <span class="nav-item-text">Inquilinos</span>
+      </div>
+      <div class="nav-item" data-section="pagos" data-tooltip="Pagos">
+        <i data-lucide="banknote" class="nav-item-icon"></i>
+        <span class="nav-item-text">Pagos</span>
+      </div>
+      <div class="nav-item" data-section="reclamos" data-tooltip="Reclamos">
+        <i data-lucide="message-square-warning" class="nav-item-icon"></i>
+        <span class="nav-item-text">Reclamos</span>
+        <span class="nav-badge" id="navReclamosBadge">2</span>
+      </div>
+
+      <div class="sidebar-section-label">Comunicación</div>
+      <div class="nav-item" data-section="avisos" data-tooltip="Avisos">
+        <i data-lucide="megaphone" class="nav-item-icon"></i>
+        <span class="nav-item-text">Avisos</span>
+      </div>
+
+      <div class="sidebar-section-label">Herramientas</div>
+      <div class="nav-item" data-section="calendario" data-tooltip="Calendario">
+        <i data-lucide="calendar-days" class="nav-item-icon"></i>
+        <span class="nav-item-text">Calendario</span>
+      </div>
+      <div class="nav-item" data-section="simulador" data-tooltip="Simulador">
+        <i data-lucide="calculator" class="nav-item-icon"></i>
+        <span class="nav-item-text">Simulador</span>
+      </div>
+
+      <div class="sidebar-section-label">Sistema</div>
+
+      <div class="nav-item" data-section="reclamos-superadmin" data-tooltip="Soporte / SuperAdmin">
+        <i data-lucide="life-buoy" class="nav-item-icon"></i>
+        <span class="nav-item-text">Soporte SA</span>
+      </div>
+
+      <div class="nav-item" data-section="expensas" data-tooltip="Expensas">
+        <i data-lucide="building-2" class="nav-item-icon"></i>
+        <span class="nav-item-text">Expensas</span>
+      </div>
+      <div class="nav-item" data-section="desactivados" data-tooltip="Usuarios Desactivados">
+        <i data-lucide="user-x" class="nav-item-icon"></i>
+        <span class="nav-item-text">Desactivados</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-profile">
+      <div class="profile-card">
+        <div class="profile-avatar" id="adminAvatar">AD</div>
+        <div class="profile-info">
+          <div class="profile-name" id="adminName">Administrador</div>
+          <div class="profile-role">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== ÁREA PRINCIPAL ==================== -->
+  <div class="main-area">
+
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:var(--space-4);">
+        <button class="topbar-hamburger" id="hamburger">
+          <i data-lucide="menu" style="width:18px;height:18px;"></i>
+        </button>
+        <div class="topbar-title-area">
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-subtitle" id="topbarSubtitle">Resumen general</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" id="notifBtn" title="Notificaciones">
+          <i data-lucide="bell" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="topbar-btn" id="logoutBtn" title="Cerrar sesión">
+          <i data-lucide="log-out" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Panel notificaciones -->
+    <div class="notif-panel" id="notifPanel">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notificaciones</span>
+        <span class="notif-count-badge" id="notifCountBadge">0</span>
+        <button class="btn btn--sm btn--ghost" id="markAllRead" style="margin-left:auto;font-size:0.75rem;">Marcar leídas</button>
+      </div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+
+    <main class="content-area" id="mainContent">
+
+      <!-- ================================================ DASHBOARD ================================================ -->
+      <section class="content-section" id="section-dashboard">
+        <div class="section-header">
+          <div><h2 class="section-title">Dashboard</h2><p class="section-subtitle">Resumen de tu administración</p></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" style="--card-accent:#6366f1;--card-icon-bg:rgba(99,102,241,0.12);">
+            <div class="stat-card-header"><div class="stat-card-icon"><i data-lucide="users" style="width:20px;height:20px;"></i></div></div>
+            <div class="stat-card-value" id="statTotalInq">—</div>
+            <div class="stat-card-label">Inquilinos activos</div>
+          </div>
+          <div class="stat-card" style="--card-accent:#10b981;--card-icon-bg:rgba(16,185,129,0.12);">
+            <div class="stat-card-header"><div class="stat-card-icon"><i data-lucide="check-circle" style="width:20px;height:20px;"></i></div></div>
+            <div class="stat-card-value" id="statPagados">—</div>
+            <div class="stat-card-label">Pagos al día</div>
+          </div>
+          <div class="stat-card" style="--card-accent:#ef4444;--card-icon-bg:rgba(239,68,68,0.12);">
+            <div class="stat-card-header"><div class="stat-card-icon"><i data-lucide="alert-circle" style="width:20px;height:20px;"></i></div></div>
+            <div class="stat-card-value" id="statAtrasados">—</div>
+            <div class="stat-card-label">Pagos atrasados</div>
+          </div>
+          <div class="stat-card" style="--card-accent:#06b6d4;--card-icon-bg:rgba(6,182,212,0.12);">
+            <div class="stat-card-header"><div class="stat-card-icon"><i data-lucide="trending-up" style="width:20px;height:20px;"></i></div></div>
+            <div class="stat-card-value" id="statIngresos">—</div>
+            <div class="stat-card-label">Ingresos del mes</div>
+          </div>
+          <div class="stat-card" style="--card-accent:#f59e0b;--card-icon-bg:rgba(245,158,11,0.12);">
+            <div class="stat-card-header"><div class="stat-card-icon"><i data-lucide="message-square-warning" style="width:20px;height:20px;"></i></div></div>
+            <div class="stat-card-value" id="statReclamos">—</div>
+            <div class="stat-card-label">Reclamos pendientes</div>
+          </div>
+        </div>
+
+        <div class="content-grid content-grid--sidebar" style="margin-top:var(--space-6);">
+          <div class="chart-container">
+            <div class="card__header"><span class="card__title">📊 Ingresos últimos 6 meses</span></div>
+            <div class="chart-bars" id="chartBars"></div>
+          </div>
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">Estado de inquilinos</span>
+              <button class="btn btn--sm btn--ghost" onclick="navigateTo('inquilinos')">Ver todos</button>
+            </div>
+            <div id="quickTenantList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ INQUILINOS ================================================ -->
+      <section class="content-section" id="section-inquilinos">
+        <div class="section-header">
+          <div><h2 class="section-title">Inquilinos</h2><p class="section-subtitle">Gestión de inquilinos y contratos</p></div>
+          <button class="btn btn--primary" id="btnNuevoInquilino">
+            <i data-lucide="user-plus" style="width:16px;height:16px;"></i> Nuevo Inquilino
+          </button>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" class="search-input" id="searchInquilino" placeholder="Buscar por nombre, email o unidad..." />
+          </div>
+          <select class="filter-select" id="filterEstado">
+            <option value="todos">Todos los estados</option>
+            <option value="pagado">Pagado</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="atrasado">Atrasado</option>
+          </select>
+          <select class="filter-select" id="filterEstadoAdmin">
+            <option value="todos">Estado cuenta</option>
+            <option value="activo">Activos</option>
+            <option value="suspendido">Suspendidos</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Inquilino</th>
+                <th>Unidad</th>
+                <th>Estado pago</th>
+                <th>Próximo pago</th>
+                <th>Alquiler / Expensas</th>
+                <th>Progreso</th>
+                <th>Documento</th>
+                <th>Servicios</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="inquilinoTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================ PAGOS ================================================ -->
+      <section class="content-section" id="section-pagos">
+        <div class="section-header">
+          <div><h2 class="section-title">Historial de Pagos</h2><p class="section-subtitle">Todos los pagos registrados</p></div>
+        </div>
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" class="search-input" id="searchPago" placeholder="Buscar pago..." />
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr><th>Inquilino</th><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="pagosTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================ RECLAMOS ================================================ -->
+      <section class="content-section" id="section-reclamos">
+        <div class="section-header">
+          <div><h2 class="section-title">Reclamos</h2><p class="section-subtitle">Gestión de reclamos y solicitudes</p></div>
+        </div>
+        <div id="reclamosAdminList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+      </section>
+
+      <!-- ================================================ AVISOS ================================================ -->
+      <section class="content-section" id="section-avisos">
+        <div class="section-header">
+          <div><h2 class="section-title">Avisos del Edificio</h2><p class="section-subtitle">Publicá comunicados para tus inquilinos</p></div>
+        </div>
+        <div class="content-grid content-grid--sidebar">
+          <div>
+            <div class="aviso-publish-form">
+              <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:600;margin-bottom:var(--space-4);">📢 Publicar nuevo aviso</h3>
+              <div style="margin-bottom:var(--space-4);">
+                <label class="form-label">Tipo de aviso</label>
+                <div class="aviso-tipo-grid">
+                  <button class="aviso-tipo-btn selected" data-tipo="general">📢 General</button>
+                  <button class="aviso-tipo-btn" data-tipo="agua">💧 Agua</button>
+                  <button class="aviso-tipo-btn" data-tipo="luz">💡 Luz</button>
+                  <button class="aviso-tipo-btn" data-tipo="gas">🔥 Gas</button>
+                  <button class="aviso-tipo-btn" data-tipo="limpieza">🧹 Limpieza</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="avisoTitulo">Título</label>
+                <input type="text" class="form-input" id="avisoTitulo" placeholder="Ej: Corte de agua programado" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="avisoCuerpo">Contenido</label>
+                <textarea class="form-textarea" id="avisoCuerpo" placeholder="Describí el aviso con todos los detalles..."></textarea>
+              </div>
+              <button class="btn btn--primary" id="btnPublicarAviso" style="width:100%;">
+                <i data-lucide="send" style="width:15px;height:15px;"></i> Publicar Aviso
+              </button>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-heading);font-size:0.875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4);">Avisos publicados</h3>
+            <div id="avisosAdminList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ CALENDARIO ================================================ -->
+      <section class="content-section" id="section-calendario">
+        <div class="section-header">
+          <div><h2 class="section-title">Calendario</h2><p class="section-subtitle">Vencimientos y fechas importantes</p></div>
+        </div>
+        <div class="content-grid content-grid--sidebar">
+          <div class="calendar-container" id="calendarContainer"></div>
+          <div class="calendar-events-panel">
+            <div class="events-panel-title">Próximos vencimientos</div>
+            <div class="event-list" id="calendarEventList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ SIMULADOR ================================================ -->
+      <section class="content-section" id="section-simulador">
+        <div class="section-header">
+          <div><h2 class="section-title">Simulador de Aumento</h2><p class="section-subtitle">Calculá el nuevo valor del alquiler</p></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);align-items:start;" class="simulador-grid">
+          <div class="increase-simulator">
+            <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:600;margin-bottom:var(--space-5);">🧮 Calculadora de aumento</h3>
+            <div class="form-group">
+              <label class="form-label">Seleccionar inquilino (opcional)</label>
+              <select class="form-select" id="simInquilino"><option value="">— Autocompletar —</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Valor actual del alquiler</label>
+              <input type="number" class="form-input" id="simValorActual" placeholder="Ej: 180000" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Porcentaje de aumento (%)</label>
+              <input type="number" class="form-input" id="simPorcentaje" placeholder="Ej: 15" />
+            </div>
+            <button class="btn btn--primary" id="btnCalcAumento" style="width:100%;">
+              <i data-lucide="calculator" style="width:15px;height:15px;"></i> Calcular
+            </button>
+            <div class="increase-result" id="simResultado">
+              <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-3);">Resultado</div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);font-size:0.875rem;">
+                <span style="color:var(--text-secondary);">Valor anterior:</span>
+                <span style="font-family:var(--font-mono);color:var(--text-muted);" id="simValorAnterior">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-3);font-size:0.875rem;">
+                <span style="color:var(--text-secondary);">Aumento:</span>
+                <span style="font-family:var(--font-mono);color:var(--color-warning);" id="simAumento">—</span>
+              </div>
+              <div style="border-top:1px solid var(--border-subtle);padding-top:var(--space-3);display:flex;justify-content:space-between;">
+                <span style="font-weight:600;">Nuevo valor:</span>
+                <div class="increase-new-value" id="simNuevoValor">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:var(--space-5);">
+            <div class="card__title" style="margin-bottom:var(--space-4);">📈 Referencias comunes</div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+              <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:10px 0;border-bottom:1px solid var(--border-subtle);">
+                <span style="color:var(--text-secondary);">Actualización trimestral</span>
+                <span style="color:var(--color-warning);font-weight:600;">~15–20%</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:10px 0;border-bottom:1px solid var(--border-subtle);">
+                <span style="color:var(--text-secondary);">Actualización semestral</span>
+                <span style="color:var(--color-warning);font-weight:600;">~30–40%</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:10px 0;">
+                <span style="color:var(--text-secondary);">Actualización anual (ICL)</span>
+                <span style="color:var(--color-danger);font-weight:600;">~60–80%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================ SOPORTE / SUPERADMIN ================================================ -->
+      <section class="content-section" id="section-reclamos-superadmin">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Soporte / SuperAdmin</h2>
+            <p class="section-subtitle">Enviá consultas técnicas, reportes de errores o problemas administrativos</p>
+          </div>
+        </div>
+
+        <!-- Formulario nuevo reclamo -->
+        <div class="card" style="max-width:600px;margin-bottom:var(--space-6);">
+          <div class="card__header">
+            <span class="card__title">📨 Nuevo reclamo al SuperAdmin</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-4);margin-top:var(--space-4);">
+            <div class="form-group">
+              <label class="form-label">Categoría</label>
+              <select class="form-select" id="rsaCategoria">
+                <option value="bug">🐛 Bug / Error del sistema</option>
+                <option value="tecnico">🔧 Problema técnico</option>
+                <option value="consulta">💬 Consulta administrativa</option>
+                <option value="otro">📌 Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Título *</label>
+              <input type="text" class="form-input" id="rsaTitulo" placeholder="Ej: El simulador no calcula correctamente" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción detallada *</label>
+              <textarea class="form-input" id="rsaDescripcion" rows="4"
+                placeholder="Describí el problema o consulta con el mayor detalle posible..." style="resize:vertical;"></textarea>
+            </div>
+            <button class="btn btn--primary" id="btnEnviarReclamoSA" style="align-self:flex-start;">
+              <i data-lucide="send" style="width:15px;height:15px;"></i>
+              Enviar reclamo
+            </button>
+          </div>
+        </div>
+
+        <!-- Historial -->
+        <h3 style="font-size:1rem;font-weight:600;margin-bottom:var(--space-4);">Historial de mis reclamos</h3>
+        <div id="reclamosSAAdminList"></div>
+        <div id="historialReclamosSA" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+
+      </section>
+
+
+      <!-- ================================================ EXPENSAS (admin) ================================================ -->
+      <section class="content-section" id="section-expensas">
+        <div class="section-header">
+          <div><h2 class="section-title">Expensas</h2><p class="section-subtitle">Cargá y gestioná expensas por inquilino</p></div>
+        </div>
+        <div class="content-grid content-grid--2">
+          <!-- Formulario nueva expensa -->
+          <div>
+            <div class="reclamo-form-container">
+              <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:600;margin-bottom:var(--space-4);">➕ Nueva expensa</h3>
+              <div class="form-group">
+                <label class="form-label">Inquilino *</label>
+                <select class="form-select" id="expensaInquilino">
+                  <option value="">— Seleccionar inquilino —</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Tipo *</label>
+                  <select class="form-select" id="expensaTipo">
+                    <option value="ordinaria">🏢 Ordinaria</option>
+                    <option value="extraordinaria">⭐ Extraordinaria</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Monto ($) *</label>
+                  <input type="number" class="form-input" id="expensaMonto" placeholder="Ej: 15000" min="0" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <input type="text" class="form-input" id="expensaDescripcion" placeholder="Ej: Mantenimiento ascensor" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Vencimiento *</label>
+                <input type="date" class="form-input" id="expensaVencimiento" />
+              </div>
+              <button class="btn btn--primary" id="btnGuardarExpensa" style="width:100%;">
+                <i data-lucide="plus" style="width:15px;height:15px;"></i> Cargar expensa
+              </button>
+            </div>
+          </div>
+          <!-- Lista de expensas cargadas -->
+          <div>
+            <h3 style="font-family:var(--font-heading);font-size:0.875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4);">Expensas cargadas</h3>
+            <div id="expensasAdminList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ DESACTIVADOS ================================================ -->
+      <section class="content-section" id="section-desactivados">
+        <div class="section-header">
+          <div><h2 class="section-title">Usuarios Desactivados</h2><p class="section-subtitle">Inquilinos con baja lógica — podés restaurarlos en cualquier momento</p></div>
+        </div>
+        <div id="desactivadosAdminList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── MODAL: Crear/Editar Inquilino ── -->
+<div class="modal-overlay" id="modalInquilino" onclick="closeOnOverlay(event,'modalInquilino')">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modalInquilinoTitle">Nuevo Inquilino</h3>
+      <button class="modal__close" onclick="closeModal('modalInquilino')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Nombre *</label><input type="text" class="form-input" id="inqNombre" placeholder="Juan" /></div>
+      <div class="form-group"><label class="form-label">Apellido *</label><input type="text" class="form-input" id="inqApellido" placeholder="Pérez" /></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Email *</label><input type="email" class="form-input" id="inqEmail" placeholder="juan@email.com" /></div>
+      <div class="form-group"><label class="form-label">DNI</label><input type="text" class="form-input" id="inqDni" placeholder="30444444" maxlength="8" /></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Teléfono</label><input type="text" class="form-input" id="inqTelefono" placeholder="+54 9 11..." /></div>
+      <div class="form-group"><label class="form-label">Unidad *</label><input type="text" class="form-input" id="inqUnidad" placeholder="Depto 2A" /></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Valor alquiler ($)</label><input type="number" class="form-input" id="inqAlquiler" placeholder="180000" /></div>
+      <div class="form-group"><label class="form-label">Método de pago</label>
+        <select class="form-select" id="inqMetodo">
+          <option value="Transferencia">Transferencia</option>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Cheque">Cheque</option>
+          <option value="Débito automático">Débito automático</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Estado pago</label>
+        <select class="form-select" id="inqEstado">
+          <option value="pendiente">Pendiente</option>
+          <option value="pagado">Pagado</option>
+          <option value="atrasado">Atrasado</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Duración (meses) *</label><input type="number" class="form-input" id="inqDuracion" placeholder="24" /></div>
+      <div class="form-group"><label class="form-label">Fecha inicio contrato *</label><input type="date" class="form-input" id="inqFechaInicio" /></div>
+    </div>
+    <!-- Bloque contraseña — visible solo al CREAR -->
+    <div id="inqPassGroup">
+      <div style="border-top:1px solid var(--border-subtle);padding-top:var(--space-4);margin-top:var(--space-2);">
+        <p style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:var(--space-3);">🔑 Credenciales de acceso del inquilino</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+          <div class="form-group"><label class="form-label">Contraseña *</label><input type="password" class="form-input" id="inqPassword" placeholder="Mínimo 6 caracteres" /></div>
+          <div class="form-group"><label class="form-label">Confirmar contraseña *</label><input type="password" class="form-input" id="inqPasswordConf" placeholder="Repetir contraseña" /></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" id="btnCancelarInquilino">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarInquilino" data-id="">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Detalle Inquilino ── -->
+<div class="modal-overlay" id="modalInquilinoDetail" onclick="closeOnOverlay(event,'modalInquilinoDetail')">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="modal__title">Detalle del Inquilino</h3>
+      <button class="modal__close" onclick="closeModal('modalInquilinoDetail')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div id="inquilinoDetailContent"></div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal('modalInquilinoDetail')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Restablecer contraseña (inquilino) ── -->
+<div class="modal-overlay" id="modalResetPass" onclick="closeOnOverlay(event,'modalResetPass')">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal__header">
+      <h3 class="modal__title">Restablecer contraseña</h3>
+      <button class="modal__close" onclick="closeModal('modalResetPass')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:var(--space-5);">
+      Nueva contraseña para: <strong id="resetPassNombre"></strong>
+    </p>
+    <div class="form-group">
+      <label class="form-label">Nueva contraseña</label>
+      <input type="password" class="form-input" id="resetPassInput" placeholder="Mínimo 6 caracteres" />
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" id="btnCancelarReset">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarReset">
+        <i data-lucide="key-round" style="width:15px;height:15px;"></i> Restablecer
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/calendar.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/properties.js"></script>
+<script src="js/map.js"></script>
+<script src="js/contracts.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

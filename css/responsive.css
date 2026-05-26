@@ -1,0 +1,263 @@
+/*
+  ============================================================
+  responsive.css — Media Queries y Adaptación Mobile
+  ============================================================
+  Centraliza los breakpoints del sistema.
+  Se carga al final para sobreescribir lo que sea necesario.
+
+  Breakpoints:
+  - Desktop:  > 1024px  (layout completo con sidebar)
+  - Tablet:   768–1024px (sidebar colapsado)
+  - Mobile:   < 768px  (sidebar como drawer)
+  ============================================================
+*/
+
+/* ============================================================
+   TOPBAR — BOTÓN HAMBURGUESA (solo mobile)
+   ============================================================ */
+
+.topbar-hamburger {
+  display: none;   /* Oculto en desktop */
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.topbar-hamburger:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   TABLET (768px–1024px)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  /* Mostrar botón hamburguesa */
+  .topbar-hamburger {
+    display: flex;
+  }
+
+  /* Sidebar se convierte en drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+    z-index: var(--z-sidebar);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Clase que agrega JS al hacer click en hamburguesa */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    animation: slideInLeft 0.3s ease;
+  }
+
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+
+  /* El área principal ocupa todo el ancho */
+  .main-area {
+    margin-left: 0 !important;
+  }
+
+  /* Overlay oscuro al abrir sidebar en mobile */
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  /* Grillas de 2 columnas pasan a 1 */
+  .content-grid--2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Layout con sidebar lateral pasa a columna única */
+  .content-grid--sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  /* Estadísticas: máximo 2 por fila */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   MOBILE (< 768px)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* ---- Reducir padding general ---- */
+  .content-area {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  /* ---- Topbar ---- */
+  .topbar {
+    padding: 0 var(--space-4);
+  }
+
+  /* Ocultar título topbar en mobile muy pequeño */
+  .topbar-title-area {
+    display: none;
+  }
+
+  /* ---- Grillas ---- */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-grid--3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Section header ---- */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  /* ---- Filtros ---- */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  /* ---- Modal ---- */
+  .modal {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+
+  .modal__footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal__footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ---- Tabla ---- */
+  /* En mobile la tabla hace scroll horizontal */
+  .table-wrapper {
+    border-radius: var(--radius-md);
+  }
+
+  /* ---- Servicio indicators ---- */
+  .service-indicators {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Detail grid ---- */
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Aviso tipo grid ---- */
+  .aviso-tipo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* ---- Notif panel ---- */
+  .notif-panel {
+    right: var(--space-4);
+    left: var(--space-4);
+    width: auto;
+  }
+
+  /* ---- Chart bars ---- */
+  .chart-bars {
+    gap: var(--space-2);
+  }
+
+  /* ---- Toast ---- */
+  #toast-container {
+    right: var(--space-4);
+    left: var(--space-4);
+    bottom: var(--space-4);
+  }
+
+  .toast {
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* ---- Demo buttons en login ---- */
+  .demo-accounts {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .demo-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   MOBILE PEQUEÑO (< 400px)
+   ============================================================ */
+
+@media (max-width: 400px) {
+  .login-card {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .login-role-selector {
+    flex-direction: column;
+  }
+
+  .topbar-actions {
+    gap: var(--space-2);
+  }
+
+  .calendar-day {
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================================
+   PRINT (impresión)
+   ============================================================ */
+
+@media print {
+  .sidebar,
+  .topbar,
+  #toast-container {
+    display: none !important;
+  }
+
+  .main-area {
+    margin-left: 0;
+  }
+
+  .content-area {
+    padding: 0;
+  }
+
+  .card, .stat-card {
+    break-inside: avoid;
+    border: 1px solid #ddd;
+  }
+}

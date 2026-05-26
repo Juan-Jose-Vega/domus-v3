@@ -1,0 +1,409 @@
+/*
+  ============================================================
+  dashboard.css — Estilos del Dashboard y Calendario
+  ============================================================
+*/
+
+/* ============================================================
+   CALENDARIO DE VENCIMIENTOS
+   ============================================================ */
+
+.calendar-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+
+/* Header del calendario: mes y botones de navegación */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.calendar-month-title {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.calendar-nav-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.calendar-nav-btn:hover {
+  background: var(--color-primary);
+  color: white;
+  border-color: transparent;
+}
+
+/* Nombres de los días */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 6px 0;
+}
+
+/* Grilla de días */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;          /* Celdas cuadradas */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendar-day:hover {
+  background: var(--bg-hover);
+}
+
+/* Día actual */
+.calendar-day.today {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+}
+
+/* Día de otro mes */
+.calendar-day.other-month {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Indicadores de eventos (bolitas de colores) */
+.calendar-day-dots {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.calendar-day-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.dot-success { background: var(--color-success); }
+.dot-warning { background: var(--color-warning); }
+.dot-danger  { background: var(--color-danger); }
+.dot-info    { background: var(--color-info); }
+
+/* Día con vencimiento: borde coloreado */
+.calendar-day.has-event {
+  border: 1px solid var(--border-default);
+}
+
+.calendar-day.event-danger  { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.06); }
+.calendar-day.event-warning { border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.06); }
+.calendar-day.event-success { border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.06); }
+
+/* Tooltip de eventos del día (aparece al hover) */
+.calendar-day-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  width: 180px;
+  z-index: var(--z-dropdown);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  white-space: normal;
+}
+
+.calendar-day:hover .calendar-day-tooltip {
+  opacity: 1;
+}
+
+.tooltip-event {
+  font-size: 0.75rem;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.tooltip-event:last-child { border-bottom: none; }
+
+/* ============================================================
+   SIDEBAR DE EVENTOS DEL CALENDARIO
+   ============================================================ */
+
+.calendar-events-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+
+.events-panel-title {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: var(--space-5);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.event-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.event-item:hover {
+  border-color: var(--border-default);
+  transform: translateX(2px);
+}
+
+/* Línea de color del evento */
+.event-color-bar {
+  width: 3px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.event-color-bar.danger  { background: var(--color-danger); }
+.event-color-bar.warning { background: var(--color-warning); }
+.event-color-bar.success { background: var(--color-success); }
+.event-color-bar.info    { background: var(--color-info); }
+
+.event-info { flex: 1; }
+
+.event-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.event-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   TABLA DE HISTORIAL DE PAGOS
+   ============================================================ */
+
+/* Celda de monto con color */
+.amount-cell {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.amount-cell.positive { color: var(--color-success); }
+.amount-cell.negative { color: var(--color-danger); }
+
+/* Celda de método de pago */
+.payment-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* Acciones en tabla */
+.table-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ============================================================
+   MODAL DE INQUILINO (detalles)
+   ============================================================ */
+
+.tenant-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tenant-detail-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.tenant-detail-name {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.tenant-detail-unit {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* Grilla de datos del inquilino */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.detail-field {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.detail-field-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.detail-field-value {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* ============================================================
+   AVISOS ADMIN — formulario de publicación
+   ============================================================ */
+
+.aviso-publish-form {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.aviso-tipo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.aviso-tipo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.aviso-tipo-btn:hover,
+.aviso-tipo-btn.selected {
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+  background: var(--bg-active);
+}
+
+/* ============================================================
+   EMPTY STATES
+   ============================================================
+   Se muestran cuando una lista está vacía.
+   ============================================================ */
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+  color: var(--text-muted);
+}
+
+.empty-state-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-text {
+  font-size: 0.875rem;
+  max-width: 280px;
+  margin: 0 auto;
+  line-height: 1.6;
+}

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RentaAdmin — Panel Inquilino</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/tenant.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout tenant-layout">
+
+  <!-- ==================== SIDEBAR INQUILINO ==================== -->
+  <aside class="sidebar" id="sidebarTenant">
+
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="url(#lg3)"/>
+          <path d="M8 28V14l10-8 10 8v14H22v-8h-8v8H8z" fill="white"/>
+          <defs>
+            <linearGradient id="lg3" x1="0" y1="0" x2="36" y2="36">
+              <stop offset="0%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#6366f1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">RentaAdmin</div>
+        <div class="sidebar-logo-sub">Panel Inquilino</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Mi alquiler</div>
+      <div class="nav-item active" data-section="inicio" data-tooltip="Mi Panel">
+        <i data-lucide="home" class="nav-item-icon"></i>
+        <span class="nav-item-text">Mi Panel</span>
+      </div>
+      <div class="nav-item" data-section="pagos" data-tooltip="Mis Pagos">
+        <i data-lucide="receipt" class="nav-item-icon"></i>
+        <span class="nav-item-text">Mis Pagos</span>
+      </div>
+      <div class="nav-item" data-section="comprobantes" data-tooltip="Comprobantes">
+        <i data-lucide="file-up" class="nav-item-icon"></i>
+        <span class="nav-item-text">Comprobantes</span>
+      </div>
+      <div class="nav-item" data-section="expensas" data-tooltip="Expensas">
+        <i data-lucide="building-2" class="nav-item-icon"></i>
+        <span class="nav-item-text">Expensas</span>
+      </div>
+      <div class="nav-item" data-section="servicios" data-tooltip="Mis Servicios">
+        <i data-lucide="zap" class="nav-item-icon"></i>
+        <span class="nav-item-text">Mis Servicios</span>
+      </div>
+
+      <div class="sidebar-section-label">Comunicación</div>
+      <div class="nav-item" data-section="contrato" data-tooltip="Mi Contrato">
+        <i data-lucide="file-text" class="nav-item-icon"></i>
+        <span class="nav-item-text">Mi Contrato</span>
+      </div>
+      <div class="nav-item" data-section="reclamos" data-tooltip="Reclamos">
+        <i data-lucide="message-circle-warning" class="nav-item-icon"></i>
+        <span class="nav-item-text">Reclamos</span>
+      </div>
+      <div class="nav-item" data-section="avisos" data-tooltip="Avisos">
+        <i data-lucide="megaphone" class="nav-item-icon"></i>
+        <span class="nav-item-text">Avisos</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-profile">
+      <div class="profile-card">
+        <div class="profile-avatar" id="tenantAvatar">IN</div>
+        <div class="profile-info">
+          <div class="profile-name" id="tenantName">Inquilino</div>
+          <div class="profile-role" id="tenantUnidad">Unidad —</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ==================== ÁREA PRINCIPAL ==================== -->
+  <div class="main-area">
+
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:var(--space-4);">
+        <button class="topbar-hamburger" id="hamburger">
+          <i data-lucide="menu" style="width:18px;height:18px;"></i>
+        </button>
+        <div class="topbar-title-area">
+          <div class="topbar-title" id="topbarTitle">Mi Panel</div>
+          <div class="topbar-subtitle" id="topbarSubtitle">Resumen de tu alquiler</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" id="notifBtn" title="Notificaciones">
+          <i data-lucide="bell" style="width:18px;height:18px;"></i>
+        </button>
+        <button class="topbar-btn" id="logoutBtn" title="Cerrar sesión">
+          <i data-lucide="log-out" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Panel notificaciones -->
+    <div class="notif-panel" id="notifPanel">
+      <div class="notif-panel-header">
+        <span class="notif-panel-title">Notificaciones</span>
+        <span class="notif-count-badge" id="notifCountBadge">0</span>
+        <button class="btn btn--sm btn--ghost" id="markAllRead" style="margin-left:auto;font-size:0.75rem;">Marcar leídas</button>
+      </div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+
+    <main class="content-area">
+
+      <!-- ================================================ INICIO ================================================ -->
+      <section class="content-section" id="section-inicio">
+        <div class="section-header">
+          <div><h2 class="section-title">Mi Panel</h2><p class="section-subtitle">Estado actual de tu alquiler</p></div>
+        </div>
+
+        <!-- Bienvenida dinámica -->
+        <div id="tenantWelcomeSection"></div>
+
+        <!-- Grid: pago + contrato -->
+        <div class="content-grid content-grid--2" style="margin-top:var(--space-6);">
+          <div id="tenantNextPayment"></div>
+          <div id="tenantContratoProgress"></div>
+        </div>
+
+        <!-- Expensas -->
+        <div style="margin-top:var(--space-5);" id="tenantExpensas"></div>
+
+        <!-- Próximos vencimientos -->
+        <div style="margin-top:var(--space-5);" id="tenantVencimientos"></div>
+
+        <!-- Servicios -->
+        <div style="margin-top:var(--space-5);" id="tenantServicios"></div>
+
+        <!-- Avisos recientes mini -->
+        <div style="margin-top:var(--space-6);">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">📢 Últimos avisos del edificio</span>
+              <button class="btn btn--sm btn--ghost" onclick="navigateToTenant('avisos')">Ver todos</button>
+            </div>
+            <div id="miniAvisosList" style="margin-top:var(--space-2);"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ PAGOS ================================================ -->
+      <section class="content-section" id="section-pagos">
+        <div class="section-header">
+          <div><h2 class="section-title">Mis Pagos</h2><p class="section-subtitle">Historial completo de tus pagos</p></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="tenantPagosTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================ COMPROBANTES ================================================ -->
+      <section class="content-section" id="section-comprobantes">
+        <div class="section-header">
+          <div><h2 class="section-title">Comprobantes</h2><p class="section-subtitle">Adjuntá tus comprobantes de pago</p></div>
+        </div>
+        <div style="max-width:600px;">
+          <div class="comprobante-uploader" id="comprobanteUploader">
+            <div class="comprobante-uploader-icon">
+              <i data-lucide="upload-cloud" style="width:28px;height:28px;"></i>
+            </div>
+            <div class="comprobante-uploader-text">Hacer click para adjuntar comprobante</div>
+            <div class="comprobante-uploader-hint">PDF, JPG o PNG — máximo 5 MB</div>
+          </div>
+          <div id="comprobantesList"></div>
+        </div>
+      </section>
+
+      <!-- ================================================ EXPENSAS (inquilino) ================================================ -->
+      <section class="content-section" id="section-expensas">
+        <div class="section-header">
+          <div><h2 class="section-title">Expensas</h2><p class="section-subtitle">Expensas del edificio cargadas por el administrador</p></div>
+        </div>
+        <div id="tenantExpensasList"></div>
+      </section>
+
+      <!-- ================================================ SERVICIOS PERSONALES ================================================ -->
+      <section class="content-section" id="section-servicios">
+        <div class="section-header">
+          <div><h2 class="section-title">Mis Servicios</h2><p class="section-subtitle">Gestioná tus servicios: luz, agua, gas, internet y otros</p></div>
+          <div class="section-actions">
+            <button class="btn btn--primary" onclick="openModal('modalServicio')">
+              <i data-lucide="plus" style="width:15px;height:15px;"></i> Agregar servicio
+            </button>
+          </div>
+        </div>
+        <div id="serviciosPersonalesList"></div>
+      </section>
+
+      <!-- ================================================ RECLAMOS ================================================ -->
+      <section class="content-section" id="section-reclamos">
+        <div class="section-header">
+          <div><h2 class="section-title">Reclamos</h2><p class="section-subtitle">Reportá problemas y seguí su estado</p></div>
+        </div>
+        <div class="content-grid content-grid--2">
+          <div>
+            <div class="reclamo-form-container">
+              <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:600;margin-bottom:var(--space-4);">📝 Nuevo reclamo</h3>
+              <div class="form-group">
+                <label class="form-label">Título *</label>
+                <input type="text" class="form-input" id="reclamoTitulo" placeholder="Ej: Pérdida de agua en baño" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoría *</label>
+                <select class="form-select" id="reclamoCategoria">
+                  <option value="">— Seleccioná una categoría —</option>
+                  <option value="Plomería">🔧 Plomería</option>
+                  <option value="Electricidad">⚡ Electricidad</option>
+                  <option value="Calefacción">🔥 Calefacción</option>
+                  <option value="Seguridad">🔒 Seguridad</option>
+                  <option value="Limpieza">🧹 Limpieza</option>
+                  <option value="Ruidos">🔊 Ruidos</option>
+                  <option value="Otro">📌 Otro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descripción *</label>
+                <textarea class="form-textarea" id="reclamoDescripcion" placeholder="Describí el problema con todos los detalles..." style="min-height:120px;"></textarea>
+              </div>
+              <button class="btn btn--primary" id="btnEnviarReclamo" style="width:100%;">
+                <i data-lucide="send" style="width:15px;height:15px;"></i> Enviar reclamo
+              </button>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-family:var(--font-heading);font-size:0.875rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-4);">Mis reclamos</h3>
+            <div id="tenantReclamoList" class="reclamo-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================ AVISOS ================================================ -->
+      <section class="content-section" id="section-avisos">
+        <div class="section-header">
+          <div><h2 class="section-title">Avisos del Edificio</h2><p class="section-subtitle">Comunicados del administrador</p></div>
+        </div>
+        <div id="avisosInquilinoList" class="aviso-list" style="max-width:700px;"></div>
+      </section>
+
+      <!-- ============================== MI CONTRATO ============================== -->
+      <section class="content-section" id="section-contrato">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Mi Contrato</h2>
+            <p class="section-subtitle">Visualizá y descargá tu contrato de alquiler</p>
+          </div>
+        </div>
+        <div id="zonaContratoTenant" style="max-width:700px;"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── MODAL: Agregar/Editar Servicio Personal ── -->
+<div class="modal-overlay" id="modalServicio" onclick="closeOnOverlay(event,'modalServicio')">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modalServicioTitle">Agregar servicio</h3>
+      <button class="modal__close" onclick="closeModal('modalServicio')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="servicioEditId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo *</label>
+          <select class="form-select" id="servicioTipo">
+            <option value="luz">💡 Luz</option>
+            <option value="agua">💧 Agua</option>
+            <option value="gas">🔥 Gas</option>
+            <option value="internet">📶 Internet</option>
+            <option value="otro">📌 Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre del proveedor</label>
+          <input type="text" class="form-input" id="servicioNombre" placeholder="Ej: EDET, Gasnor, Telecom" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto ($) *</label>
+          <input type="number" class="form-input" id="servicioMonto" placeholder="Ej: 8500" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vencimiento *</label>
+          <input type="date" class="form-input" id="servicioVencimiento" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comprobante (referencia)</label>
+        <input type="text" class="form-input" id="servicioComprobante" placeholder="Ej: recibo-mayo-luz.pdf" />
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" onclick="closeModal('modalServicio')">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarServicio">
+        <i data-lucide="save" style="width:15px;height:15px;"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/contracts.js"></script>
+<script src="js/tenant.js"></script>
+</body>
+</html>

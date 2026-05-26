@@ -1,0 +1,128 @@
+/*
+  ============================================================
+  superadmin.css — Estilos exclusivos del Panel SuperAdmin
+  ============================================================
+  Extiende admin.css con:
+  - Acento dorado/ámbar para diferenciar el rol de superadmin
+  - Cards de planes con gradientes y estilos premium
+  - Barra de distribución de planes
+  ============================================================
+*/
+
+/* ── Acento de color del superadmin (dorado) ── */
+.app-layout .sidebar { --color-primary: #f59e0b; --color-primary-light: #fbbf24; }
+
+/* ============================================================
+   CARDS DE PLANES
+   ============================================================ */
+.sa-plan-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.sa-plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Línea superior de color por plan */
+.sa-plan-card--basico  { border-top: 3px solid var(--text-muted); }
+.sa-plan-card--pro     { border-top: 3px solid var(--color-info); }
+.sa-plan-card--premium { border-top: 3px solid var(--color-success); }
+
+/* Card destacada (Pro) */
+.sa-plan-card--featured {
+  background: linear-gradient(160deg, rgba(59,130,246,0.08), var(--bg-surface));
+  border-color: rgba(59,130,246,0.3);
+}
+
+/* Badge "Popular" */
+.sa-plan-badge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-info);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+.sa-plan-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.sa-plan-name {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.sa-plan-price {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.sa-plan-price span {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.sa-plan-limit {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.sa-plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex: 1;
+}
+
+.sa-plan-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.sa-plan-features li i { color: var(--color-success); flex-shrink: 0; }
+
+.sa-plan-count {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .content-grid--3 { grid-template-columns: 1fr; }
+}

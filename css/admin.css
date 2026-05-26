@@ -1,0 +1,963 @@
+/*
+  ============================================================
+  admin.css — Estilos del Panel Administrador
+  ============================================================
+  Layout principal: sidebar fijo + contenido principal.
+
+  Estructura del layout:
+  ┌─────────────────────────────────────────┐
+  │  SIDEBAR (fijo, izquierda)              │
+  │  ┌─────────────────────────────────┐   │
+  │  │  Logo                           │   │
+  │  │  Navegación                     │   │
+  │  │  ...items...                    │   │
+  │  │  Perfil de usuario              │   │
+  │  └─────────────────────────────────┘   │
+  │                                         │
+  │  MAIN AREA (derecha)                    │
+  │  ┌─────────────────────────────────┐   │
+  │  │  TOPBAR                         │   │
+  │  ├─────────────────────────────────┤   │
+  │  │  CONTENT (secciones dinámicas)  │   │
+  │  └─────────────────────────────────┘   │
+  └─────────────────────────────────────────┘
+  ============================================================
+*/
+
+/* ---- Layout raíz del panel ---- */
+.app-layout {
+  display: flex;           /* Sidebar y main lado a lado */
+  min-height: 100vh;
+  background: var(--bg-base);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.sidebar {
+  width: var(--sidebar-width);       /* 260px definido en global.css */
+  min-height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;                   /* Se queda fijo al hacer scroll */
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-sidebar);
+  transition: width var(--transition-normal), transform var(--transition-normal);
+  overflow: hidden;                  /* Oculta texto cuando colapsa */
+}
+
+/* Estado colapsado: solo íconos */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed);   /* 68px */
+}
+
+/* Overlay que aparece en mobile cuando el sidebar está abierto */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  z-index: calc(var(--z-sidebar) - 1);
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* ---- Logo en el sidebar ---- */
+.sidebar-logo {
+  padding: 20px var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--topbar-height);
+}
+
+.sidebar-logo-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;   /* No se achica cuando el sidebar colapsa */
+}
+
+.sidebar-logo-text {
+  white-space: nowrap;   /* Evita que el texto baje de línea */
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .sidebar-logo-text {
+  opacity: 0;   /* Se oculta suavemente al colapsar */
+}
+
+.sidebar-logo-name {
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sidebar-logo-sub {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ---- Botón de colapsar sidebar ---- */
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: -14px;         /* Sobresale del borde del sidebar */
+  width: 28px;
+  height: 28px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 1;
+}
+
+.sidebar-toggle:hover {
+  background: var(--color-primary);
+  color: white;
+  border-color: transparent;
+}
+
+/* ---- Sección de navegación ---- */
+.sidebar-nav {
+  flex: 1;              /* Ocupa todo el espacio disponible */
+  padding: var(--space-4) var(--space-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Label de sección (ej: "PRINCIPAL", "GESTIÓN") */
+.sidebar-section-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 var(--space-3);
+  margin: var(--space-5) 0 var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .sidebar-section-label {
+  opacity: 0;   /* Se oculta en modo colapsado */
+}
+
+/* Item de navegación */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 450;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 2px;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Estado activo: item seleccionado */
+.nav-item.active {
+  background: var(--bg-active);
+  color: var(--color-primary-light);
+  font-weight: 500;
+}
+
+/* Línea indicadora izquierda del item activo */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+/* Ícono del nav item */
+.nav-item-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;   /* El ícono no desaparece al colapsar */
+}
+
+/* Texto del nav item (se oculta al colapsar) */
+.nav-item-text {
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .nav-item-text {
+  opacity: 0;
+}
+
+/* Badge de notificación en nav item (ej: "3" reclamos pendientes) */
+.nav-badge {
+  margin-left: auto;
+  background: var(--color-danger);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .nav-badge {
+  opacity: 0;
+}
+
+/* Tooltip al hacer hover en modo colapsado */
+.nav-item[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(var(--sidebar-collapsed) + 10px);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  z-index: 999;
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar.collapsed .nav-item[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* ---- Perfil de usuario al fondo del sidebar ---- */
+.sidebar-profile {
+  padding: var(--space-4) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  overflow: hidden;
+}
+
+.profile-card:hover {
+  background: var(--bg-hover);
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  overflow: hidden;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar.collapsed .profile-info {
+  opacity: 0;
+}
+
+.profile-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  truncate: true;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   ÁREA PRINCIPAL (a la derecha del sidebar)
+   ============================================================ */
+
+.main-area {
+  margin-left: var(--sidebar-width);    /* Deja espacio para el sidebar */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left var(--transition-normal);
+}
+
+/* Cuando el sidebar está colapsado, el main se expande */
+.sidebar.collapsed ~ .main-area {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.topbar {
+  height: var(--topbar-height);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dropdown);
+  backdrop-filter: blur(10px);
+}
+
+/* Título de la sección actual */
+.topbar-title {
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.topbar-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Grupo de acciones de la derecha del topbar */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Botón de ícono del topbar */
+.topbar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.topbar-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* Indicador de notificaciones (bolita roja) */
+.notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-danger);
+  border-radius: 50%;
+  border: 2px solid var(--bg-surface);
+}
+
+/* ============================================================
+   PANEL DE NOTIFICACIONES (dropdown)
+   ============================================================ */
+
+.notif-panel {
+  position: absolute;
+  top: calc(var(--topbar-height) - 8px);
+  right: var(--space-6);
+  width: 340px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-dropdown);
+  display: none;
+  animation: slideUp 0.25s ease;
+  overflow: hidden;
+}
+
+.notif-panel.open {
+  display: block;
+}
+
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.notif-panel-title {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.notif-count-badge {
+  background: var(--color-danger);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.notif-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.notif-item:hover {
+  background: var(--bg-hover);
+}
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
+.notif-item.unread {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.notif-dot-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notif-item-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.notif-item-body {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.notif-item-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   ÁREA DE CONTENIDO
+   ============================================================
+   Aquí se renderizan las diferentes secciones del panel.
+   JS muestra/oculta las secciones al cambiar el nav item.
+   ============================================================ */
+
+.content-area {
+  flex: 1;
+  padding: var(--space-8) var(--space-6);
+  overflow-y: auto;
+}
+
+/* Cada sección se oculta/muestra con esta clase */
+.content-section {
+  display: none;
+  animation: slideUp 0.35s ease;
+}
+
+.content-section.active {
+  display: block;
+}
+
+/* Encabezado de sección */
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   DASHBOARD — Tarjetas de estadísticas
+   ============================================================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;             /* Línea superior de color */
+  background: var(--card-accent, var(--color-primary));
+}
+
+.stat-card:hover {
+  border-color: var(--border-default);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.stat-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--card-icon-bg, var(--bg-active));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--card-accent, var(--color-primary));
+}
+
+.stat-card-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stat-card-trend.up   { color: var(--color-success); }
+.stat-card-trend.down { color: var(--color-danger); }
+
+.stat-card-value {
+  font-family: var(--font-heading);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stat-card-label {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   GRILLA DE CONTENIDO
+   ============================================================ */
+
+.content-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.content-grid--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.content-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.content-grid--sidebar {
+  grid-template-columns: 1fr 340px;  /* Contenido + panel lateral */
+}
+
+/* ============================================================
+   FILTROS Y BÚSQUEDA
+   ============================================================ */
+
+.filters-bar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 9px 14px 9px 38px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.filter-select {
+  padding: 9px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  font-family: inherit;
+}
+
+.filter-select:focus {
+  border-color: var(--color-primary);
+}
+
+/* ============================================================
+   BARRA DE PROGRESO DEL CONTRATO
+   ============================================================ */
+
+.progress-bar-container {
+  margin-top: var(--space-3);
+}
+
+.progress-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.progress-bar-track {
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  transition: width 1s ease;     /* Animación al cargar */
+  position: relative;
+}
+
+/* Brillo animado en la barra de progreso */
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: progressShine 2s ease-in-out infinite;
+}
+
+@keyframes progressShine {
+  to { left: 100%; }
+}
+
+/* ============================================================
+   INDICADORES DE SERVICIOS (agua, luz, gas)
+   ============================================================ */
+
+.service-indicators {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.service-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.service-item:hover {
+  border-color: var(--border-default);
+}
+
+.service-icon {
+  font-size: 1.25rem;
+  margin-bottom: var(--space-1);
+}
+
+.service-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.service-status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Colores del semáforo para servicios */
+.service-item.status-ok     { border-color: rgba(16, 185, 129, 0.3); }
+.service-item.status-warn   { border-color: rgba(245, 158, 11, 0.3); }
+.service-item.status-danger { border-color: rgba(239, 68, 68, 0.3); }
+.service-item.status-ok     .service-status { color: var(--color-success); }
+.service-item.status-warn   .service-status { color: var(--color-warning); }
+.service-item.status-danger .service-status { color: var(--color-danger); }
+
+/* ============================================================
+   SIMULADOR DE AUMENTO (calculator card)
+   ============================================================ */
+
+.increase-simulator {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.increase-result {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+  display: none;
+}
+
+.increase-result.visible {
+  display: block;
+  animation: slideUp 0.3s ease;
+}
+
+.increase-new-value {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-success);
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   GRÁFICO CSS (fake chart para dashboard)
+   ============================================================ */
+
+.chart-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  height: 140px;
+  padding-top: var(--space-3);
+}
+
+.chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  height: 100%;
+}
+
+.chart-bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height 1s ease;
+  position: relative;
+  min-height: 4px;
+  opacity: 0.85;
+}
+
+.chart-bar:hover {
+  opacity: 1;
+  filter: brightness(1.1);
+}
+
+.chart-bar-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: auto;
+}
+
+.chart-bar-value {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  /* En tablet, el sidebar se oculta por defecto */
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-area {
+    margin-left: 0 !important;
+  }
+
+  .content-grid--2,
+  .content-grid--sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .content-area {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-grid--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+  }
+
+  .topbar {
+    padding: 0 var(--space-4);
+  }
+
+  .service-indicators {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domus Alquilia — Iniciar Sesión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/login.css" />
+</head>
+<body class="login-body">
+
+  <!-- Orbes decorativos de fondo -->
+  <div class="login-bg">
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+    <div class="bg-orb bg-orb--3"></div>
+  </div>
+
+  <main class="login-container" id="loginContainer">
+
+    <!-- Logo -->
+    <div class="login-brand">
+      <div class="login-logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="url(#logoGrad)"/>
+          <path d="M8 28V14l10-8 10 8v14H22v-8h-8v8H8z" fill="white"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="36" y2="36">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="login-brand-text">
+        <h1 class="login-brand-name">Domus Alquilia</h1>
+        <p class="login-brand-tagline">Transformando la gestión de alquileres</p>
+      </div>
+    </div>
+
+    <!-- Tarjeta de login -->
+    <div class="login-card" id="loginCard">
+      <div class="login-card-header">
+        <h2 class="login-title">Bienvenido de vuelta</h2>
+        <p class="login-subtitle">Ingresá tus credenciales para continuar</p>
+      </div>
+
+      <!--
+        SIN selector de rol (v2).
+        El rol se detecta automáticamente: superadmin → admin → inquilino.
+      -->
+      <div class="login-form">
+
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Correo electrónico o DNI</label>
+          <div class="form-input-wrapper">
+            <i data-lucide="user" class="form-icon"></i>
+            <input type="text" id="loginEmail" class="form-input" placeholder="tu@correo.com o 12345678" autocomplete="username" />
+          </div>
+          <span class="form-error" id="emailError"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Contraseña</label>
+          <div class="form-input-wrapper">
+            <i data-lucide="lock" class="form-icon"></i>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+            <button class="form-toggle-password" id="togglePassword" type="button">
+              <i data-lucide="eye" id="eyeIcon"></i>
+            </button>
+          </div>
+          <span class="form-error" id="passwordError"></span>
+        </div>
+
+        <!-- Error global -->
+        <div class="login-error-msg" id="loginErrorMsg" style="display:none;">
+          <i data-lucide="alert-circle"></i>
+          <span id="loginErrorText">Credenciales incorrectas</span>
+        </div>
+
+        <button class="btn-login" id="btnLogin">
+          <span id="btnLoginText">Ingresar</span>
+          <div class="btn-spinner" id="btnSpinner" style="display:none;"></div>
+        </button>
+
+        <!-- Link recuperar contraseña (v2: abre modal explicativo según jerarquía) -->
+        <div style="text-align:center;margin-top:var(--space-4);">
+          <a href="#" class="login-forgot-link" id="forgotPassLink">¿Olvidaste tu contraseña?</a>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="login-footer">© 2025 <a href="landing.html" style="color:inherit;text-decoration:none;">Domus Alquilia</a> · Transformando la gestión de alquileres</p>
+
+  </main>
+
+  <!--
+    Modal: ¿Olvidaste tu contraseña?
+    Muestra el flujo de recuperación según la jerarquía del sistema:
+    Inquilino → contactar Admin; Admin → contactar SuperAdmin.
+  -->
+  <div class="modal-overlay" id="modalRecuperar" onclick="closeOnOverlay(event,'modalRecuperar')">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal__header">
+        <h3 class="modal__title">Recuperar acceso</h3>
+        <button class="modal__close" onclick="closeModal('modalRecuperar')">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:var(--space-4);">
+
+        <!-- Bloque inquilino -->
+        <div style="background:var(--bg-elevated);border-radius:var(--radius-lg);padding:var(--space-5);border:1px solid var(--border-subtle);">
+          <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+            <div style="width:36px;height:36px;background:var(--bg-active);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="user" style="width:18px;height:18px;color:var(--color-primary-light);"></i>
+            </div>
+            <div style="font-weight:600;">Inquilinos</div>
+          </div>
+          <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.6;">
+            Contactá al <strong>administrador de tu alquiler</strong> para que restablezca tu contraseña desde su panel.
+          </p>
+        </div>
+
+        <!-- Bloque admin -->
+        <div style="background:var(--bg-elevated);border-radius:var(--radius-lg);padding:var(--space-5);border:1px solid var(--border-subtle);">
+          <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);">
+            <div style="width:36px;height:36px;background:rgba(139,92,246,0.1);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="shield-check" style="width:18px;height:18px;color:var(--color-secondary);"></i>
+            </div>
+            <div style="font-weight:600;">Administradores</div>
+          </div>
+          <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.6;">
+            Contactá al <strong>soporte principal del sistema (SuperAdmin)</strong> para recuperar tu acceso.
+          </p>
+        </div>
+
+        <div style="background:rgba(99,102,241,0.06);border-radius:var(--radius-md);padding:var(--space-4);border:1px solid var(--border-primary);font-size:0.8125rem;color:var(--text-secondary);">
+          <i data-lucide="info" style="width:14px;height:14px;display:inline;margin-right:4px;color:var(--color-primary-light);"></i>
+          Las contraseñas son restablecidas por el nivel jerárquico superior del sistema.
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--primary" id="btnCerrarRecuperar">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

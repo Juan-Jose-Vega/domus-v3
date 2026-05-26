@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domus Alquilia — SuperAdmin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/superadmin.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+
+  <!-- ==================== SIDEBAR SUPERADMIN ==================== -->
+  <aside class="sidebar" id="sidebar">
+
+    <button class="sidebar-toggle" id="sidebarToggle">
+      <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+    </button>
+
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="url(#lgSA)"/>
+          <path d="M18 4l2.5 7.5H28l-6.5 4.7 2.5 7.5L18 19l-6 4.7 2.5-7.5L8.5 11.5H16z" fill="white"/>
+          <defs>
+            <linearGradient id="lgSA" x1="0" y1="0" x2="36" y2="36">
+              <stop offset="0%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name" style="background:linear-gradient(135deg,#fbbf24,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">SuperAdmin</div>
+        <div class="sidebar-logo-sub">Plataforma RentaAdmin</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <div class="sidebar-section-label">Principal</div>
+
+      <div class="nav-item active" data-section="dashboard" data-tooltip="Dashboard">
+        <i data-lucide="layout-dashboard" class="nav-item-icon"></i>
+        <span class="nav-item-text">Dashboard</span>
+      </div>
+
+      <div class="sidebar-section-label">Gestión</div>
+
+      <div class="nav-item" data-section="admins" data-tooltip="Administradores">
+        <i data-lucide="shield-check" class="nav-item-icon"></i>
+        <span class="nav-item-text">Administradores</span>
+      </div>
+
+      <div class="nav-item" data-section="planes" data-tooltip="Planes">
+        <i data-lucide="sparkles" class="nav-item-icon"></i>
+        <span class="nav-item-text">Planes</span>
+      </div>
+
+      <div class="sidebar-section-label">Soporte</div>
+      <div class="nav-item" data-section="reclamos-sa" data-tooltip="Reclamos de Admins">
+        <i data-lucide="message-square-warning" class="nav-item-icon"></i>
+        <span class="nav-item-text">Reclamos</span>
+        <span class="nav-badge" id="saBadgeReclamos" style="display:none;"></span>
+      </div>
+
+      <div class="sidebar-section-label">Sistema</div>
+      <div class="nav-item" data-section="desactivados" data-tooltip="Usuarios Desactivados">
+        <i data-lucide="user-x" class="nav-item-icon"></i>
+        <span class="nav-item-text">Desactivados</span>
+      </div>
+
+    </nav>
+
+    <div class="sidebar-profile">
+      <div class="profile-card">
+        <div class="profile-avatar" id="saAvatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">SA</div>
+        <div class="profile-info">
+          <div class="profile-name" id="saName">SuperAdmin</div>
+          <div class="profile-role">★ Super Administrador</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ==================== ÁREA PRINCIPAL ==================== -->
+  <div class="main-area">
+
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:var(--space-4);">
+        <button class="topbar-hamburger" id="hamburger">
+          <i data-lucide="menu" style="width:18px;height:18px;"></i>
+        </button>
+        <div class="topbar-title-area">
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-subtitle" id="topbarSubtitle">Vista global de la plataforma</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <!-- Notificaciones -->
+        <div style="position:relative;">
+          <button class="topbar-btn" id="notifBtn" title="Notificaciones">
+            <i data-lucide="bell" style="width:18px;height:18px;"></i>
+          </button>
+          <!-- Panel de notificaciones -->
+          <div class="notif-panel" id="notifPanel">
+            <div class="notif-panel-header">
+              <span class="notif-panel-title">Notificaciones</span>
+              <button class="btn btn--xs btn--secondary" id="markAllRead">Marcar leídas</button>
+            </div>
+            <div class="notif-list" id="notifList"></div>
+          </div>
+        </div>
+        <button class="topbar-btn" id="logoutBtn" title="Cerrar sesión">
+          <i data-lucide="log-out" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ======================================================
+           SECCIÓN: DASHBOARD SUPERADMIN
+           ====================================================== -->
+      <section class="content-section" id="section-dashboard">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Dashboard Global</h2>
+            <p class="section-subtitle">Vista completa de la plataforma</p>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+
+          <div class="stat-card" style="--card-accent:#f59e0b;--card-icon-bg:rgba(245,158,11,0.12);">
+            <div class="stat-card-header">
+              <div class="stat-card-icon"><i data-lucide="shield-check" style="width:20px;height:20px;"></i></div>
+            </div>
+            <div class="stat-card-value" id="saStatAdmins">—</div>
+            <div class="stat-card-label">Administradores activos</div>
+          </div>
+
+          <div class="stat-card" style="--card-accent:#10b981;--card-icon-bg:rgba(16,185,129,0.12);">
+            <div class="stat-card-header">
+              <div class="stat-card-icon"><i data-lucide="trending-up" style="width:20px;height:20px;"></i></div>
+            </div>
+            <div class="stat-card-value" id="saStatIngresos">—</div>
+            <div class="stat-card-label">Ingresos plataforma (10%)</div>
+          </div>
+
+          <div class="stat-card" style="--card-accent:#f59e0b;--card-icon-bg:rgba(245,158,11,0.12);">
+            <div class="stat-card-header">
+              <div class="stat-card-icon"><i data-lucide="message-square-warning" style="width:20px;height:20px;"></i></div>
+            </div>
+            <div class="stat-card-value" id="saStatReclamos">—</div>
+            <div class="stat-card-label">Reclamos globales pendientes</div>
+          </div>
+
+          <div class="stat-card" style="--card-accent:#ef4444;--card-icon-bg:rgba(239,68,68,0.12);">
+            <div class="stat-card-header">
+              <div class="stat-card-icon"><i data-lucide="pause-circle" style="width:20px;height:20px;"></i></div>
+            </div>
+            <div class="stat-card-value" id="saStatSuspendidos">—</div>
+            <div class="stat-card-label">Cuentas suspendidas</div>
+          </div>
+
+        </div>
+
+        <!-- Grid: Actividad + mini admins + planes chart -->
+        <div class="content-grid content-grid--sidebar" style="margin-top:var(--space-6);">
+
+          <!-- Actividad reciente -->
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">⚡ Actividad reciente</span>
+            </div>
+            <div id="actividadList" style="margin-top:var(--space-2);">
+              <!-- JS -->
+            </div>
+          </div>
+
+          <!-- Panel derecho -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-5);">
+
+            <!-- Mini lista admins -->
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">Administradores</span>
+                <button class="btn btn--sm btn--ghost" onclick="navigateTo('admins')">Ver todos</button>
+              </div>
+              <div id="miniAdminsList"></div>
+            </div>
+
+            <!-- Distribución de planes (barras CSS) -->
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">📊 Distribución de planes</span>
+              </div>
+              <div id="planesChartBars" style="margin-top:var(--space-4);"></div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN: GESTIÓN DE ADMINS
+           ====================================================== -->
+      <section class="content-section" id="section-admins">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Administradores</h2>
+            <p class="section-subtitle">Gestión de cuentas y planes</p>
+          </div>
+          <button class="btn btn--primary" id="btnNuevoAdmin">
+            <i data-lucide="user-plus" style="width:16px;height:16px;"></i>
+            Nuevo Admin
+          </button>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" class="search-input" id="searchAdmin" placeholder="Buscar administrador..." />
+          </div>
+          <select class="filter-select" id="filterPlan">
+            <option value="todos">Todos los planes</option>
+            <option value="basico">Básico</option>
+            <option value="pro">Pro</option>
+            <option value="premium">Premium</option>
+          </select>
+          <select class="filter-select" id="filterEstadoAdmin">
+            <option value="todos">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="suspendido">Suspendido</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Administrador</th>
+                <th>Plan</th>
+                <th>Estado</th>
+                <th>Inquilinos</th>
+                <th>Fecha alta</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="adminTbody"></tbody>
+          </table>
+        </div>
+
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN: PLANES
+           ====================================================== -->
+      <section class="content-section" id="section-planes">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Planes</h2>
+            <p class="section-subtitle">Configuración de planes disponibles</p>
+          </div>
+        </div>
+
+        <div class="content-grid content-grid--3" style="max-width:900px;">
+
+          <!-- Básico -->
+          <div class="sa-plan-card sa-plan-card--basico">
+            <div class="sa-plan-icon">⬡</div>
+            <div class="sa-plan-name">Básico</div>
+            <div class="sa-plan-price">$24.990<span>/mes</span></div>
+            <div class="sa-plan-limit">Hasta 5 inquilinos</div>
+            <ul class="sa-plan-features">
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Prueba gratuita por 7 días</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Gestión básica</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Avisos</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Reclamos</li>
+              <li style="opacity:.4;"><i data-lucide="x" style="width:13px;height:13px;"></i> Simulador</li>
+              <li style="opacity:.4;"><i data-lucide="x" style="width:13px;height:13px;"></i> Reportes</li>
+            </ul>
+            <div class="sa-plan-count" id="planCount_basico">0 admins activos</div>
+          </div>
+
+          <!-- Pro -->
+          <div class="sa-plan-card sa-plan-card--pro sa-plan-card--featured">
+            <div class="sa-plan-badge">Popular</div>
+            <div class="sa-plan-icon">◈</div>
+            <div class="sa-plan-name">Pro</div>
+            <div class="sa-plan-price">$99.990<span>/mes</span></div>
+            <div class="sa-plan-limit">Hasta 30 inquilinos</div>
+            <ul class="sa-plan-features">
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Todo lo básico</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Simulador de aumento</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Calendario</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Comprobantes</li>
+              <li style="opacity:.4;"><i data-lucide="x" style="width:13px;height:13px;"></i> API access</li>
+            </ul>
+            <div class="sa-plan-count" id="planCount_pro">0 admins activos</div>
+          </div>
+
+          <!-- Premium -->
+          <div class="sa-plan-card sa-plan-card--premium">
+            <div class="sa-plan-icon">★</div>
+            <div class="sa-plan-name">Premium</div>
+            <div class="sa-plan-price">$120.000<span>/mes</span></div>
+            <div class="sa-plan-limit">Inquilinos ilimitados</div>
+            <ul class="sa-plan-features">
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Todo lo Pro</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Reportes avanzados</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> API access</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Soporte prioritario</li>
+              <li><i data-lucide="check" style="width:13px;height:13px;"></i> Multi-edificio</li>
+            </ul>
+            <div class="sa-plan-count" id="planCount_premium">0 admins activos</div>
+          </div>
+
+        </div>
+
+        <!-- Inquilinos por administrador -->
+        <div style="margin-top:var(--space-7);">
+          <h3 style="font-size:1rem;font-weight:600;margin-bottom:var(--space-4);color:var(--text-primary);">
+            Inquilinos por administrador
+          </h3>
+          <div id="inqPorAdminList" style="display:flex;flex-direction:column;gap:var(--space-3);"></div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN: RECLAMOS ADMINS → SUPERADMIN
+           ====================================================== -->
+      <section class="content-section" id="section-reclamos-sa">
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Reclamos de Administradores</h2>
+            <p class="section-subtitle">Consultas técnicas y administrativas enviadas por los admins</p>
+          </div>
+        </div>
+
+        <div class="filters-bar" style="margin-bottom:var(--space-5);">
+          <select class="filter-select" id="filterReclamoSAEstado">
+            <option value="todos">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="respondido">Respondido</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+          <select class="filter-select" id="filterReclamoSACategoria">
+            <option value="todas">Todas las categorías</option>
+            <option value="bug">Bug / Error del sistema</option>
+            <option value="consulta">Consulta administrativa</option>
+            <option value="tecnico">Problema técnico</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <div id="reclamosSAList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+
+      </section>
+
+      <!-- ================================================ DESACTIVADOS ================================================ -->
+      <section class="content-section" id="section-desactivados">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Usuarios Desactivados</h2>
+            <p class="section-subtitle">Admins e inquilinos con baja lógica — podés restaurarlos</p>
+          </div>
+        </div>
+        <div id="desactivadosSAList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── MODAL: Crear/Editar Admin ── -->
+<div class="modal-overlay" id="modalAdmin" onclick="closeOnOverlay(event,'modalAdmin')">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modalAdminTitle">Nuevo Administrador</h3>
+      <button class="modal__close" onclick="closeModal('modalAdmin')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" class="form-input" id="adminNombre" placeholder="Carlos Martínez" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="adminEmail" placeholder="admin@empresa.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">DNI</label>
+        <input type="text" class="form-input" id="adminDni" placeholder="12345678" maxlength="8" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono</label>
+        <input type="text" class="form-input" id="adminTelefono" placeholder="+54 9 11..." />
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label">Empresa / Inmobiliaria</label>
+        <input type="text" class="form-input" id="adminEmpresa" placeholder="Inmobiliaria Ejemplo" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Plan</label>
+        <select class="form-select" id="adminPlan">
+          <option value="basico">⬡ Básico (5 inq.)</option>
+          <option value="pro">◈ Pro (30 inq.)</option>
+          <option value="premium">★ Premium (ilimitado)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha inicio contrato</label>
+        <input type="date" class="form-input" id="adminFechaInicio" />
+      </div>
+      <div class="form-group" id="adminPassGroup">
+        <label class="form-label">Contraseña inicial *</label>
+        <input type="password" class="form-input" id="adminPassword" placeholder="Mínimo 6 caracteres" />
+      </div>
+    </div>
+
+    <!-- Zona de contrato del admin -->
+    <div id="zonaContratoAdminModal" style="display:none;margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border-subtle);"></div>
+
+    <div class="modal__footer">
+      <button class="btn btn--secondary" id="btnCancelarAdmin">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarAdmin" data-id="">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Restablecer Contraseña ── -->
+<div class="modal-overlay" id="modalResetPass" onclick="closeOnOverlay(event,'modalResetPass')">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal__header">
+      <h3 class="modal__title">Restablecer contraseña</h3>
+      <button class="modal__close" onclick="closeModal('modalResetPass')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:var(--space-5);">
+      Establecé una nueva contraseña para: <strong id="resetPassNombre"></strong>
+    </p>
+    <div class="form-group">
+      <label class="form-label">Nueva contraseña</label>
+      <input type="password" class="form-input" id="resetPassInput" placeholder="Mínimo 6 caracteres" />
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" id="btnCancelarReset">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarReset">
+        <i data-lucide="key-round" style="width:15px;height:15px;"></i>
+        Restablecer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Responder Reclamo SA ── -->
+<div class="modal-overlay" id="modalResponderReclamoSA" onclick="closeOnOverlay(event,'modalResponderReclamoSA')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal__header">
+      <h3 class="modal__title">Responder Reclamo</h3>
+      <button class="modal__close" onclick="closeModal('modalResponderReclamoSA')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div style="margin-bottom:var(--space-4);">
+      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px;">Reclamo de:</div>
+      <div style="font-weight:600;" id="rsaAdminNombre">—</div>
+      <div style="font-size:0.875rem;color:var(--text-secondary);margin-top:6px;font-style:italic;" id="rsaDetalleTitulo"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Respuesta *</label>
+      <textarea class="form-input" id="rsaRespuestaInput" rows="4" placeholder="Escribí tu respuesta al administrador..." style="resize:vertical;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Marcar como</label>
+      <select class="form-select" id="rsaEstadoSelect">
+        <option value="respondido">Respondido</option>
+        <option value="resuelto">Resuelto</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal('modalResponderReclamoSA')">Cancelar</button>
+      <button class="btn btn--primary" id="btnEnviarRespuestaSA">
+        <i data-lucide="send" style="width:15px;height:15px;"></i>
+        Enviar respuesta
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/contracts.js"></script>
+<script src="js/superadmin.js"></script>
+</body>
+</html>
