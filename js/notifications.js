@@ -74,21 +74,64 @@ function setupNotifPanel() {
 }
 
 /**
+ * Detecta si estamos en el panel de inquilino (tenant) o admin.
+ * Retorna 'tenant' o 'admin'.
+ */
+function detectarPanelActual() {
+  if (typeof navigateToTenant === 'function') return 'tenant';
+  return 'admin';
+}
+
+/**
  * Determina la sección de destino según el contenido/tipo de una notificación.
- * Devuelve el sectionId para navigateTo().
+ * Devuelve el sectionId para navigateTo(), adaptado al panel actual.
+ *
+ * Secciones válidas tenant: inicio, pagos, comprobantes, expensas, servicios,
+ *                           contrato, reclamos, avisos
+ * Secciones válidas admin:  dashboard, inquilinos, pagos, reclamos, avisos,
+ *                           calendario, simulador, expensas, reclamos-superadmin
  */
 function resolverSeccionNotif(notif) {
   const titulo = (notif.titulo || '').toLowerCase();
   const cuerpo = (notif.cuerpo  || '').toLowerCase();
-  const tipo   = (notif.tipo    || '').toLowerCase();
   const texto  = titulo + ' ' + cuerpo;
+  const panel  = detectarPanelActual();
 
-  if (texto.includes('reclamo'))        return 'reclamos';
-  if (texto.includes('comprobante'))    return 'comprobantes';
-  if (texto.includes('pago') || texto.includes('alquiler')) return 'pagos';
-  if (texto.includes('aviso') || texto.includes('corte') || texto.includes('fumigación')) return 'avisos';
-  if (texto.includes('contrato') || texto.includes('venci')) return 'inquilinos';
-  if (texto.includes('admin'))          return 'admins';
+  // Expensas — presente en ambos paneles
+  if (texto.includes('expensa'))                                      return 'expensas';
+
+  // Reclamos — presente en ambos paneles
+  if (texto.includes('reclamo'))                                      return 'reclamos';
+
+  // Avisos — presente en ambos paneles
+  if (
+    texto.includes('aviso')      ||
+    texto.includes('corte')      ||
+    texto.includes('fumigación') ||
+    texto.includes('comunicado')
+  )                                                                   return 'avisos';
+
+  // Comprobantes — solo en tenant; en admin redirigir a inquilinos
+  if (texto.includes('comprobante')) {
+    return panel === 'tenant' ? 'comprobantes' : 'inquilinos';
+  }
+
+  // Servicios — solo en tenant; en admin redirigir a inquilinos
+  if (texto.includes('servicio')) {
+    return panel === 'tenant' ? 'servicios' : 'inquilinos';
+  }
+
+  // Contrato / vencimiento — tenant usa 'contrato', admin usa 'inquilinos'
+  if (texto.includes('contrato') || texto.includes('vencimiento') || texto.includes('venci')) {
+    return panel === 'tenant' ? 'contrato' : 'inquilinos';
+  }
+
+  // Pagos / alquiler — presente en ambos paneles
+  if (texto.includes('pago') || texto.includes('alquiler'))          return 'pagos';
+
+  // Inquilinos — solo admin
+  if (texto.includes('inquilino') && panel === 'admin')              return 'inquilinos';
+
   return null;
 }
 
@@ -173,8 +216,6 @@ function renderNotifList() {
       // Navegar a la sección correspondiente
       if (seccion && typeof navigateTo === 'function') {
         navigateTo(seccion);
-      } else if (seccion && typeof navigateToTenant === 'function') {
-        navigateToTenant(seccion);
       }
 
       renderNotifList();

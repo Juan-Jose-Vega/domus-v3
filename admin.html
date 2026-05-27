@@ -59,14 +59,10 @@
         <i data-lucide="users" class="nav-item-icon"></i>
         <span class="nav-item-text">Inquilinos</span>
       </div>
-      <div class="nav-item" data-section="pagos" data-tooltip="Pagos">
-        <i data-lucide="banknote" class="nav-item-icon"></i>
-        <span class="nav-item-text">Pagos</span>
-      </div>
       <div class="nav-item" data-section="reclamos" data-tooltip="Reclamos">
         <i data-lucide="message-square-warning" class="nav-item-icon"></i>
         <span class="nav-item-text">Reclamos</span>
-        <span class="nav-badge" id="navReclamosBadge">2</span>
+        <span class="nav-badge" id="navReclamosBadge" style="display:none;"></span>
       </div>
 
       <div class="sidebar-section-label">Comunicación</div>
@@ -92,6 +88,10 @@
         <span class="nav-item-text">Soporte SA</span>
       </div>
 
+      <div class="nav-item" data-section="propiedades" data-tooltip="Propiedades">
+        <i data-lucide="building" class="nav-item-icon"></i>
+        <span class="nav-item-text">Propiedades</span>
+      </div>
       <div class="nav-item" data-section="expensas" data-tooltip="Expensas">
         <i data-lucide="building-2" class="nav-item-icon"></i>
         <span class="nav-item-text">Expensas</span>
@@ -244,26 +244,7 @@
         </div>
       </section>
 
-      <!-- ================================================ PAGOS ================================================ -->
-      <section class="content-section" id="section-pagos">
-        <div class="section-header">
-          <div><h2 class="section-title">Historial de Pagos</h2><p class="section-subtitle">Todos los pagos registrados</p></div>
-        </div>
-        <div class="filters-bar">
-          <div class="search-input-wrapper">
-            <i data-lucide="search" class="search-icon"></i>
-            <input type="text" class="search-input" id="searchPago" placeholder="Buscar pago..." />
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>Inquilino</th><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr>
-            </thead>
-            <tbody id="pagosTbody"></tbody>
-          </table>
-        </div>
-      </section>
+
 
       <!-- ================================================ RECLAMOS ================================================ -->
       <section class="content-section" id="section-reclamos">
@@ -435,6 +416,46 @@
       </section>
 
 
+      <!-- ================================================ PROPIEDADES ================================================ -->
+      <section class="content-section" id="section-propiedades">
+        <div class="section-header">
+          <div><h2 class="section-title">Propiedades</h2><p class="section-subtitle">Gestión de propiedades y unidades</p></div>
+          <button class="btn btn--primary" id="btnNuevaPropiedad">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Nueva Propiedad
+          </button>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" class="search-input" id="searchPropiedad" placeholder="Buscar por nombre, dirección o ciudad..." />
+          </div>
+          <select class="filter-select" id="filterPropEstado">
+            <option value="todos">Todos los estados</option>
+            <option value="disponible">Disponible</option>
+            <option value="reservada">Reservada</option>
+            <option value="ocupada">Ocupada</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Propiedad</th>
+                <th>Piso</th>
+                <th>Dirección</th>
+                <th>Ciudad / Provincia</th>
+                <th>Estado</th>
+                <th>Observaciones</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="propiedadTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- ================================================ EXPENSAS (admin) ================================================ -->
       <section class="content-section" id="section-expensas">
         <div class="section-header">
@@ -497,6 +518,41 @@
   </div>
 </div>
 
+<!-- ── MODAL: Crear/Editar Propiedad ── -->
+<div class="modal-overlay" id="modalPropiedad" onclick="closeOnOverlay(event,'modalPropiedad')">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="modal__title" id="modalPropiedadTitle">Nueva Propiedad</h3>
+      <button class="modal__close" onclick="closeModal('modalPropiedad')">
+        <i data-lucide="x" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Nombre / Departamento *</label><input type="text" class="form-input" id="propNombre" placeholder="Depto 1A" /></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Piso</label><input type="text" class="form-input" id="propPiso" placeholder="1" /></div>
+      <div class="form-group"><label class="form-label">Estado</label>
+        <select class="form-select" id="propEstado">
+          <option value="disponible">Disponible</option>
+          <option value="reservada">Reservada</option>
+          <option value="ocupada">Ocupada</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Dirección</label><input type="text" class="form-input" id="propDireccion" placeholder="Av. Corrientes 1234" /></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Ciudad</label><input type="text" class="form-input" id="propCiudad" placeholder="Buenos Aires" /></div>
+      <div class="form-group"><label class="form-label">Provincia</label><input type="text" class="form-input" id="propProvincia" placeholder="Buenos Aires" /></div>
+    </div>
+    <div class="form-group"><label class="form-label">Observaciones</label><textarea class="form-input" id="propObservaciones" rows="2" placeholder="Notas adicionales..."></textarea></div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal('modalPropiedad')">Cancelar</button>
+      <button class="btn btn--primary" id="btnGuardarPropiedad" data-id="">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL: Crear/Editar Inquilino ── -->
 <div class="modal-overlay" id="modalInquilino" onclick="closeOnOverlay(event,'modalInquilino')">
   <div class="modal">
@@ -516,9 +572,13 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
       <div class="form-group"><label class="form-label">Teléfono</label><input type="text" class="form-input" id="inqTelefono" placeholder="+54 9 11..." /></div>
-      <div class="form-group"><label class="form-label">Unidad *</label><input type="text" class="form-input" id="inqUnidad" placeholder="Depto 2A" /></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+      <div class="form-group"><label class="form-label">Propiedad *</label>
+        <select class="form-select" id="inqPropiedadId">
+          <option value="">— Seleccionar propiedad —</option>
+        </select>
+        <input type="text" class="form-input" id="inqUnidad" placeholder="Depto 2A" style="display:none;" />
+      </div>
+    </div>    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
       <div class="form-group"><label class="form-label">Valor alquiler ($)</label><input type="number" class="form-input" id="inqAlquiler" placeholder="180000" /></div>
       <div class="form-group"><label class="form-label">Método de pago</label>
         <select class="form-select" id="inqMetodo">
@@ -540,11 +600,34 @@
       <div class="form-group"><label class="form-label">Duración (meses) *</label><input type="number" class="form-input" id="inqDuracion" placeholder="24" /></div>
       <div class="form-group"><label class="form-label">Fecha inicio contrato *</label><input type="date" class="form-input" id="inqFechaInicio" /></div>
     </div>
-    <!-- Bloque contraseña — visible solo al CREAR -->
+    <!-- Bloque contraseña — creación y edición -->
     <div id="inqPassGroup">
       <div style="border-top:1px solid var(--border-subtle);padding-top:var(--space-4);margin-top:var(--space-2);">
         <p style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:var(--space-3);">🔑 Credenciales de acceso del inquilino</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+
+        <!-- Vista solo lectura: contraseña actual (modo edición) -->
+        <div id="inqPassReadOnly" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Contraseña asignada</label>
+            <div style="display:flex;align-items:center;gap:var(--space-2);">
+              <input type="password" class="form-input" id="inqPasswordDisplay" readonly
+                style="font-family:var(--font-mono);background:var(--bg-elevated);cursor:default;flex:1;" />
+              <button type="button"
+                onclick="togglePassDisplay()"
+                id="btnTogglePassDisplay"
+                title="Mostrar / ocultar contraseña"
+                style="padding:0 var(--space-3);height:38px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface);cursor:pointer;display:flex;align-items:center;gap:4px;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                <i data-lucide="eye" style="width:15px;height:15px;"></i> Ver
+              </button>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+              Para cambiarla usá el botón <strong>Restablecer contraseña</strong> en la tabla.
+            </p>
+          </div>
+        </div>
+
+        <!-- Campos de creación (modo nuevo inquilino) -->
+        <div id="inqPassCreate" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
           <div class="form-group"><label class="form-label">Contraseña *</label><input type="password" class="form-input" id="inqPassword" placeholder="Mínimo 6 caracteres" /></div>
           <div class="form-group"><label class="form-label">Confirmar contraseña *</label><input type="password" class="form-input" id="inqPasswordConf" placeholder="Repetir contraseña" /></div>
         </div>
@@ -604,10 +687,6 @@
 <script src="js/utils.js"></script>
 <script src="js/notifications.js"></script>
 <script src="js/calendar.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="js/demo.js"></script>
-<script src="js/properties.js"></script>
-<script src="js/map.js"></script>
 <script src="js/contracts.js"></script>
 <script src="js/admin.js"></script>
 </body>

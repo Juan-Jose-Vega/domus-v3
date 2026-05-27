@@ -40,10 +40,27 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initNotifications();
   initTopbar();
+  updateReclamosBadge();
   navigateTo('dashboard');
 
   console.log('[Admin v3] Panel listo. AdminId:', adminIdActual);
 });
+
+// ============================================================
+// BADGE RECLAMOS PENDIENTES (sidebar)
+// ============================================================
+
+function updateReclamosBadge() {
+  const badge = document.getElementById('navReclamosBadge');
+  if (!badge) return;
+  const pendientes = getReclamosByAdmin(adminIdActual).filter(r => r.estado === 'pendiente').length;
+  if (pendientes > 0) {
+    badge.textContent = pendientes;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
 
 // ============================================================
 // SIDEBAR
@@ -106,13 +123,13 @@ function navigateTo(sectionId) {
   const titles = {
     dashboard:          { title: 'Dashboard',         sub: 'Resumen general' },
     inquilinos:         { title: 'Inquilinos',        sub: 'Gestión de inquilinos y contratos' },
-    pagos:              { title: 'Pagos',             sub: 'Historial de pagos' },
     reclamos:           { title: 'Reclamos',          sub: 'Gestión de reclamos' },
     avisos:             { title: 'Avisos',            sub: 'Comunicados del edificio' },
     calendario:         { title: 'Calendario',        sub: 'Vencimientos y fechas' },
     simulador:          { title: 'Simulador',         sub: 'Calculadora de aumentos' },
     desactivados:       { title: 'Usuarios Desactivados', sub: 'Historial de bajas lógicas' },
     'reclamos-superadmin': { title: 'Soporte / SuperAdmin', sub: 'Enviá consultas técnicas o reportes de errores' },
+    propiedades:           { title: 'Propiedades',          sub: 'Gestión de propiedades y unidades' },
     expensas:              { title: 'Expensas',             sub: 'Gestión de expensas por inquilino' },
   };
 
@@ -125,14 +142,15 @@ function navigateTo(sectionId) {
   switch (sectionId) {
     case 'dashboard':            renderDashboard();             break;
     case 'inquilinos':           renderInquilinos();            break;
-    case 'pagos':                renderPagos();                 break;
-    case 'reclamos':             renderReclamosAdmin();         break;
+    case 'reclamos':             renderReclamosAdmin(); updateReclamosBadge(); break;
     case 'avisos':               renderAvisosAdmin();           break;
     case 'calendario':           initCalendar();                break;
     case 'simulador':            renderSimulador();             break;
     case 'desactivados':         renderDesactivadosAdmin();     break;
     case 'reclamos-superadmin':  renderReclamosSuperAdmin();    break;
+    case 'propiedades':          renderPropiedadesAdmin();      break;
     case 'expensas':             renderExpensasAdmin();         break;
+    case 'pagos':               navigateTo('inquilinos');       return;
   }
 }
 
@@ -228,19 +246,23 @@ function renderInquilinos() {
 }
 
 function setupInquilinoFilters() {
-  document.getElementById('searchInquilino')?.addEventListener('input', e => {
-    filtroInquilinos.busqueda = e.target.value.toLowerCase();
-    renderInquilinoTable();
-  });
-  document.getElementById('filterEstado')?.addEventListener('change', e => {
-    filtroInquilinos.estado = e.target.value;
-    renderInquilinoTable();
-  });
-  document.getElementById('filterEstadoAdmin')?.addEventListener('change', e => {
-    filtroInquilinos.estadoAdmin = e.target.value;
-    renderInquilinoTable();
-  });
-  document.getElementById('btnNuevoInquilino')?.addEventListener('click', () => openInquilinoModal(null));
+  const si = document.getElementById('searchInquilino');
+  if (si && !si.dataset.bound) {
+    si.dataset.bound = '1';
+    si.addEventListener('input', e => { filtroInquilinos.busqueda = e.target.value.toLowerCase(); renderInquilinoTable(); });
+  }
+  const fe = document.getElementById('filterEstado');
+  if (fe && !fe.dataset.bound) {
+    fe.dataset.bound = '1';
+    fe.addEventListener('change', e => { filtroInquilinos.estado = e.target.value; renderInquilinoTable(); });
+  }
+  const fa = document.getElementById('filterEstadoAdmin');
+  if (fa && !fa.dataset.bound) {
+    fa.dataset.bound = '1';
+    fa.addEventListener('change', e => { filtroInquilinos.estadoAdmin = e.target.value; renderInquilinoTable(); });
+  }
+  const bn = document.getElementById('btnNuevoInquilino');
+  if (bn) bn.onclick = () => openInquilinoModal(null);
 }
 
 function renderInquilinoTable() {
@@ -359,7 +381,6 @@ function openInquilinoDetail(id) {
   const pct = Math.min(Math.round((inq.mesActual / inq.duracionContrato) * 100), 100);
   const { texto: textoContrato, urgencia: urgContrato } = textoVencimientoContrato(inq.fechaVencimiento);
 
-  const pagosInq    = getPagosByInquilino(id).slice(0, 3);
   const reclamosInq = getReclamosByInquilino(id).slice(0, 3);
 
   const container = document.getElementById('inquilinoDetailContent');
@@ -435,22 +456,6 @@ function openInquilinoDetail(id) {
       </div>
     </div>
 
-    <!-- Últimos pagos -->
-    ${pagosInq.length > 0 ? `
-    <div style="margin-bottom:var(--space-5);">
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:var(--space-3);">Últimos pagos</div>
-      ${pagosInq.map(p => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-subtle);font-size:0.875rem;">
-          <span>${p.concepto}</span>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span style="font-family:var(--font-mono);color:var(--color-success);">${formatearPesos(p.monto)}</span>
-            ${badgePago(p.estado)}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-    ` : ''}
-
     <!-- Reclamos recientes -->
     ${reclamosInq.length > 0 ? `
     <div>
@@ -467,6 +472,9 @@ function openInquilinoDetail(id) {
 
   openModal('modalInquilinoDetail');
   initIcons();
+
+  // ── Sección Pagos + Comprobantes del inquilino ──
+  _renderPagosComprobantesDetalle(container, id);
 
   // ── Widget de contratos en el detalle del inquilino ──
   if (typeof renderContratoWidget === 'function') {
@@ -487,6 +495,170 @@ function openInquilinoDetail(id) {
       emailEntidad:    inq.email || '(email no registrado)',
     });
   }
+}
+
+/**
+ * Renderiza el historial de pagos y comprobantes del inquilino
+ * dentro del modal de detalle — reemplaza la sección global "Pagos".
+ */
+function _renderPagosComprobantesDetalle(container, inquilinoId) {
+  const inq     = getInquilinoById(inquilinoId);
+  const pagos   = getPagosByInquilino(inquilinoId);
+  const comps   = getComprobantesByInquilino(inquilinoId);
+
+  const zona = document.createElement('div');
+  zona.style.cssText = 'margin-top:var(--space-5);padding-top:var(--space-5);border-top:1px solid var(--border-subtle);';
+
+  // ── Tabs ──
+  zona.innerHTML = `
+    <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4);">
+      <button class="btn btn--sm btn--primary" id="tabBtnPagos_${inquilinoId}" onclick="_switchTabPagos('${inquilinoId}','pagos')">
+        <i data-lucide="banknote" style="width:13px;height:13px;"></i> Pagos
+      </button>
+      <button class="btn btn--sm btn--secondary" id="tabBtnComps_${inquilinoId}" onclick="_switchTabPagos('${inquilinoId}','comps')">
+        <i data-lucide="file-up" style="width:13px;height:13px;"></i> Comprobantes
+        ${comps.length > 0 ? `<span style="margin-left:4px;background:var(--color-primary);color:white;border-radius:99px;padding:1px 6px;font-size:0.7rem;">${comps.length}</span>` : ''}
+      </button>
+    </div>
+
+    <!-- TAB PAGOS -->
+    <div id="tabPagos_${inquilinoId}">
+      ${pagos.length === 0
+        ? `<p style="color:var(--text-muted);font-size:0.875rem;padding:var(--space-4) 0;">Sin pagos registrados</p>`
+        : `<div style="overflow-x:auto;">
+            <table class="table" style="font-size:0.8125rem;">
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Fecha</th>
+                  <th>Monto</th>
+                  <th>Método</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pagos.map(p => `
+                  <tr>
+                    <td>${p.concepto}</td>
+                    <td>${formatearFecha(p.fecha)}</td>
+                    <td style="font-family:var(--font-mono);color:var(--color-success);">${formatearPesos(p.monto)}</td>
+                    <td>${p.metodoPago || '—'}</td>
+                    <td>${badgePago(p.estado)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>`
+      }
+    </div>
+
+    <!-- TAB COMPROBANTES -->
+    <div id="tabComps_${inquilinoId}" style="display:none;">
+      ${comps.length === 0
+        ? `<p style="color:var(--text-muted);font-size:0.875rem;padding:var(--space-4) 0;">Sin comprobantes adjuntados</p>`
+        : `<div style="display:flex;flex-direction:column;gap:var(--space-3);">
+            ${comps.map(c => `
+              <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--bg-elevated);border-radius:var(--radius-md);flex-wrap:wrap;">
+                <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--bg-surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i data-lucide="${c.tipo === 'pdf' ? 'file-text' : 'image'}" style="width:18px;height:18px;color:var(--color-primary);"></i>
+                </div>
+                <div style="flex:1;min-width:140px;">
+                  <div style="font-weight:500;font-size:0.875rem;">${c.nombre}</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">${c.concepto} · ${c.tamaño || ''} · Subido: ${formatearFecha(c.fecha)}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--space-2);flex-shrink:0;">
+                  ${c.estado === 'verificado'
+                    ? '<span class="badge badge--success">✓ Verificado</span>'
+                    : '<span class="badge badge--warning">⏳ Pendiente</span>'
+                  }
+                  ${c.dataUrl
+                    ? `<button class="btn btn--sm btn--secondary" onclick="_verComprobante('${c.id}')" title="Ver comprobante">
+                         <i data-lucide="eye" style="width:13px;height:13px;"></i> Ver
+                       </button>
+                       <a class="btn btn--sm btn--secondary" href="${c.dataUrl}" download="${c.nombre}" title="Descargar">
+                         <i data-lucide="download" style="width:13px;height:13px;"></i>
+                       </a>`
+                    : `<span style="font-size:0.75rem;color:var(--text-muted);">Sin archivo</span>`
+                  }
+                  ${c.estado !== 'verificado'
+                    ? `<button class="btn btn--sm btn--primary" onclick="_verificarComprobante('${c.id}','${inquilinoId}')" title="Verificar">
+                         <i data-lucide="check" style="width:13px;height:13px;"></i>
+                       </button>`
+                    : ''
+                  }
+                </div>
+              </div>
+            `).join('')}
+          </div>`
+      }
+    </div>
+  `;
+
+  container.appendChild(zona);
+  initIcons();
+}
+
+function _switchTabPagos(inquilinoId, tab) {
+  const tabPagos = document.getElementById(`tabPagos_${inquilinoId}`);
+  const tabComps = document.getElementById(`tabComps_${inquilinoId}`);
+  const btnPagos = document.getElementById(`tabBtnPagos_${inquilinoId}`);
+  const btnComps = document.getElementById(`tabBtnComps_${inquilinoId}`);
+  if (!tabPagos || !tabComps) return;
+  if (tab === 'pagos') {
+    tabPagos.style.display = '';
+    tabComps.style.display = 'none';
+    btnPagos.className = 'btn btn--sm btn--primary';
+    btnComps.className = 'btn btn--sm btn--secondary';
+  } else {
+    tabPagos.style.display = 'none';
+    tabComps.style.display = '';
+    btnPagos.className = 'btn btn--sm btn--secondary';
+    btnComps.className = 'btn btn--sm btn--primary';
+  }
+}
+
+function _verComprobante(compId) {
+  const comp = getComprobantes().find(c => c.id === compId);
+  if (!comp?.dataUrl) { showToast('Archivo no disponible', 'warning'); return; }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'display:flex;z-index:9999;';
+  const esImg = comp.tipo === 'imagen' || /\.(jpg|jpeg|png|gif|webp)$/i.test(comp.nombre);
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:700px;width:95%;">
+      <div class="modal__header">
+        <h3 class="modal__title">📎 ${comp.nombre}</h3>
+        <button class="modal__close" onclick="this.closest('.modal-overlay').remove()">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:var(--space-4);">
+        ${comp.concepto} · Subido: ${formatearFecha(comp.fecha)} · ${comp.tamaño || ''}
+      </div>
+      <div style="background:var(--bg-elevated);border-radius:var(--radius-md);overflow:hidden;max-height:70vh;overflow-y:auto;display:flex;align-items:center;justify-content:center;min-height:200px;">
+        ${esImg
+          ? `<img src="${comp.dataUrl}" style="max-width:100%;max-height:65vh;object-fit:contain;" alt="${comp.nombre}" />`
+          : `<iframe src="${comp.dataUrl}" style="width:100%;height:65vh;border:none;" title="${comp.nombre}"></iframe>`
+        }
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+        <a class="btn btn--primary" href="${comp.dataUrl}" download="${comp.nombre}">
+          <i data-lucide="download" style="width:15px;height:15px;"></i> Descargar
+        </a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  initIcons();
+}
+
+function _verificarComprobante(compId, inquilinoId) {
+  updateComprobante(compId, { estado: 'verificado' });
+  showToast('✔ Comprobante verificado', 'success');
+  // Re-render detalle
+  openInquilinoDetail(inquilinoId);
 }
 
 /**
@@ -533,27 +705,92 @@ function openInquilinoModal(id) {
   document.getElementById('inqEmail').value     = inq?.email     || '';
   document.getElementById('inqDni').value       = inq?.dni       || '';
   document.getElementById('inqTelefono').value  = inq?.telefono  || '';
-  document.getElementById('inqUnidad').value    = inq?.unidad    || '';
   document.getElementById('inqAlquiler').value  = inq?.valorAlquiler || '';
   document.getElementById('inqMetodo').value    = inq?.metodoPago || 'Transferencia';
   document.getElementById('inqEstado').value    = inq?.estadoPago || 'pendiente';
   document.getElementById('inqDuracion').value  = inq?.duracionContrato || 24;
   document.getElementById('inqFechaInicio').value = inq?.fechaInicioContrato || new Date().toISOString().split('T')[0];
 
-  // Campos contraseña solo en creación
-  const passGroup = document.getElementById('inqPassGroup');
-  if (passGroup) passGroup.style.display = id ? 'none' : 'block';
+  // Poblar selector de propiedades
+  _poblarSelectorPropiedades(inq?.propiedadId || null, id || null);
+
+  // Bloque contraseña: siempre visible, cambia según modo
+  const passReadOnly = document.getElementById('inqPassReadOnly');
+  const passCreate   = document.getElementById('inqPassCreate');
+
+  if (id) {
+    // Modo edición: mostrar contraseña actual (solo lectura)
+    if (passCreate)   passCreate.style.display   = 'none';
+    if (passReadOnly) passReadOnly.style.display  = 'block';
+
+    // Buscar contraseña del usuario asociado al inquilino
+    const usuarios = storageGet(STORAGE_KEYS.USUARIOS, []);
+    const usuarioInq = usuarios.find(u => u.email === inq?.email && u.rol === 'inquilino');
+    const passDisplay = document.getElementById('inqPasswordDisplay');
+    if (passDisplay) {
+      passDisplay.value = usuarioInq?.password || '';
+      passDisplay.type  = 'password';
+    }
+    const btnToggle = document.getElementById('btnTogglePassDisplay');
+    if (btnToggle) {
+      btnToggle.innerHTML = '<i data-lucide="eye" style="width:15px;height:15px;"></i> Ver';
+    }
+  } else {
+    // Modo creación: mostrar campos de contraseña
+    if (passCreate)   passCreate.style.display   = 'grid';
+    if (passReadOnly) passReadOnly.style.display  = 'none';
+
+    // Limpiar campos
+    ['inqPassword','inqPasswordConf'].forEach(fid => {
+      const f = document.getElementById(fid);
+      if (f) { f.value = ''; f.type = 'password'; }
+    });
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 
   document.getElementById('btnGuardarInquilino').setAttribute('data-id', id || '');
   openModal('modalInquilino');
 }
 
-function setupInquilinoForm() {
-  document.getElementById('btnGuardarInquilino')?.addEventListener('click', () => {
-    const id = document.getElementById('btnGuardarInquilino').getAttribute('data-id');
-    guardarInquilino(id || null);
+/** Llena el <select> de propiedades con las disponibles + la actual del inquilino */
+function _poblarSelectorPropiedades(propiedadIdActual, inquilinoId) {
+  const sel = document.getElementById('inqPropiedadId');
+  if (!sel) return;
+  const props = getPropiedadesByAdmin(adminIdActual);
+
+  sel.innerHTML = '<option value="">— Seleccionar propiedad —</option>';
+
+  props.forEach(p => {
+    // Mostrar: disponibles + la que ya tiene asignada este inquilino
+    const esLaActual = p.id === propiedadIdActual;
+    if (p.estado === 'disponible' || esLaActual) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      let label = p.nombre;
+      if (p.piso) label += ` (Piso ${p.piso})`;
+      if (esLaActual && p.estado !== 'disponible') label += ` — ${p.estado}`;
+      opt.textContent = label;
+      if (esLaActual) opt.selected = true;
+      sel.appendChild(opt);
+    }
   });
-  document.getElementById('btnCancelarInquilino')?.addEventListener('click', () => closeModal('modalInquilino'));
+
+  // Si no hay propiedades disponibles y tampoco hay actual
+  if (sel.options.length === 1) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.disabled = true;
+    opt.textContent = 'Sin propiedades disponibles';
+    sel.appendChild(opt);
+  }
+}
+
+function setupInquilinoForm() {
+  const bg = document.getElementById('btnGuardarInquilino');
+  if (bg) bg.onclick = () => { const id = bg.getAttribute('data-id'); guardarInquilino(id || null); };
+  const bc = document.getElementById('btnCancelarInquilino');
+  if (bc) bc.onclick = () => closeModal('modalInquilino');
 }
 
 function guardarInquilino(id) {
@@ -561,7 +798,16 @@ function guardarInquilino(id) {
   const apellido       = document.getElementById('inqApellido').value.trim();
   const email          = document.getElementById('inqEmail').value.trim();
   const dni            = document.getElementById('inqDni')?.value.trim() || '';
-  const unidad         = document.getElementById('inqUnidad').value.trim();
+  // Propiedad seleccionada
+  const propiedadId = document.getElementById('inqPropiedadId')?.value || '';
+  const propObj     = propiedadId ? getPropiedadById(propiedadId) : null;
+  // Validar estado si es nueva asignación
+  if (!id && propObj && propObj.estado !== 'disponible') {
+    const estadoLabel = { reservada: 'Propiedad reservada', ocupada: 'Propiedad ocupada' }[propObj.estado] || propObj.estado;
+    showToast(`⚠️ ${estadoLabel}: "${propObj.nombre}"`, 'warning');
+    return;
+  }
+  const unidad = propObj ? propObj.nombre : (document.getElementById('inqUnidad')?.value.trim() || '');
   const alquiler       = parseFloat(document.getElementById('inqAlquiler').value) || 0;
   const fechaInicio    = document.getElementById('inqFechaInicio').value;
   const duracion       = parseInt(document.getElementById('inqDuracion').value) || 24;
@@ -594,6 +840,7 @@ function guardarInquilino(id) {
 
   const data = {
     nombre, apellido, email, dni, unidad,
+    propiedadId:         propiedadId || '',
     telefono:            document.getElementById('inqTelefono').value.trim(),
     valorAlquiler:       alquiler,
     metodoPago:          document.getElementById('inqMetodo').value,
@@ -612,6 +859,17 @@ function guardarInquilino(id) {
   };
 
   if (id) {
+    // Handle property change on edit
+    const inqAnterior = getInquilinoById(id);
+    const propAnterior = inqAnterior?.propiedadId || '';
+    if (propAnterior && propAnterior !== propiedadId) {
+      // Liberar la propiedad anterior
+      liberarPropiedad(propAnterior);
+    }
+    if (propiedadId && propiedadId !== propAnterior) {
+      // Ocupar la nueva propiedad
+      ocuparPropiedad(propiedadId, 'ocupada');
+    }
     updateInquilino(id, data);
     showToast('Inquilino actualizado correctamente', 'success');
     closeModal('modalInquilino');
@@ -622,6 +880,8 @@ function guardarInquilino(id) {
       showToast(resultado.error, 'danger');
       return;
     }
+    // Ocupar la propiedad asignada
+    if (propiedadId) ocuparPropiedad(propiedadId, 'ocupada');
     closeModal('modalInquilino');
     renderInquilinoTable();
     // Mostrar credenciales generadas al admin
@@ -686,6 +946,9 @@ function ocultarInq(id, nombre) {
 function desactivarInq(id, nombre) {
   const motivo = prompt(`Motivo de desactivación para ${nombre} (opcional):`);
   if (motivo === null) return; // canceló
+  // Liberar la propiedad del inquilino
+  const inqParaDesact = getInquilinoById(id);
+  if (inqParaDesact?.propiedadId) liberarPropiedad(inqParaDesact.propiedadId);
   desactivarInquilino(id);
   // Buscar el usuario de login del inquilino para moverlo al panel
   const inq = getInquilinoById(id);
@@ -743,13 +1006,16 @@ function openResetPassInquilino(inquilinoId) {
   document.getElementById('btnCancelarReset').onclick = () => closeModal('modalResetPass');
 }
 
+
+
 // ============================================================
 // PAGOS
 // ============================================================
 
 function renderPagos() {
   renderPagosTable();
-  document.getElementById('searchPago')?.addEventListener('input', e => renderPagosTable(e.target.value));
+  const sp = document.getElementById('searchPago');
+  if (sp && !sp.dataset.bound) { sp.dataset.bound='1'; sp.addEventListener('input', e => renderPagosTable(e.target.value)); }
 }
 
 function renderPagosTable(filtro = '') {
@@ -777,10 +1043,6 @@ function renderPagosTable(filtro = '') {
 
   initIcons();
 }
-
-// ============================================================
-// RECLAMOS
-// ============================================================
 
 function renderReclamosAdmin() {
   const container = document.getElementById('reclamosAdminList');
@@ -825,12 +1087,9 @@ function renderReclamosAdmin() {
 function cambiarEstadoReclamo(id, nuevoEstado) {
   updateReclamo(id, { estado: nuevoEstado });
   renderReclamosAdmin();
+  updateReclamosBadge();
   showToast('Estado del reclamo actualizado', 'success');
 }
-
-// ============================================================
-// AVISOS
-// ============================================================
 
 function renderAvisosAdmin() {
   renderAvisosList();
@@ -866,17 +1125,20 @@ function renderAvisosList() {
 }
 
 function setupAvisoForm() {
+  const btn = document.getElementById('btnPublicarAviso');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
   let tipoSeleccionado = 'general';
 
-  document.querySelectorAll('.aviso-tipo-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.aviso-tipo-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      tipoSeleccionado = btn.getAttribute('data-tipo');
-    });
+  document.querySelectorAll('.aviso-tipo-btn').forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll('.aviso-tipo-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      tipoSeleccionado = b.getAttribute('data-tipo');
+    };
   });
 
-  document.getElementById('btnPublicarAviso')?.addEventListener('click', () => {
+  btn.onclick = () => {
     const titulo = document.getElementById('avisoTitulo').value.trim();
     const cuerpo = document.getElementById('avisoCuerpo').value.trim();
     if (!titulo || !cuerpo) { showToast('Completá el título y el contenido', 'warning'); return; }
@@ -886,7 +1148,7 @@ function setupAvisoForm() {
     document.getElementById('avisoCuerpo').value = '';
     renderAvisosList();
     showToast('Aviso publicado', 'success');
-  });
+  };
 }
 
 function eliminarAviso(id) {
@@ -897,10 +1159,6 @@ function eliminarAviso(id) {
   }
 }
 
-// ============================================================
-// SIMULADOR DE AUMENTO
-// ============================================================
-
 function renderSimulador() {
   const selectInq = document.getElementById('simInquilino');
   if (selectInq) {
@@ -908,13 +1166,19 @@ function renderSimulador() {
     selectInq.innerHTML = `<option value="">— Seleccionar para autocompletar —</option>` +
       inqs.map(i => `<option value="${i.valorAlquiler}">${i.nombre} ${i.apellido} — ${formatearPesos(i.valorAlquiler)}</option>`).join('');
 
-    selectInq.addEventListener('change', () => {
-      const val = parseFloat(selectInq.value);
-      if (val) document.getElementById('simValorActual').value = val;
-    });
+    if (!selectInq.dataset.bound) {
+      selectInq.dataset.bound = '1';
+      selectInq.addEventListener('change', () => {
+        const val = parseFloat(selectInq.value);
+        if (val) document.getElementById('simValorActual').value = val;
+      });
+    }
   }
 
-  document.getElementById('btnCalcAumento')?.addEventListener('click', () => {
+  const btnCalc = document.getElementById('btnCalcAumento');
+  if (btnCalc && !btnCalc.dataset.bound) {
+    btnCalc.dataset.bound = '1';
+    btnCalc.addEventListener('click', () => {
     const valorActual = parseFloat(document.getElementById('simValorActual').value) || 0;
     const porcentaje  = parseFloat(document.getElementById('simPorcentaje').value)  || 0;
     if (!valorActual || !porcentaje) { showToast('Ingresá el valor actual y el porcentaje', 'warning'); return; }
@@ -926,12 +1190,8 @@ function renderSimulador() {
     document.getElementById('simValorAnterior').textContent = formatearPesos(valorActual);
     showToast(`Nuevo valor: ${formatearPesos(nuevoValor)}`, 'success');
   });
+  }
 }
-
-
-// ============================================================
-// SECCIÓN USUARIOS DESACTIVADOS (admin panel)
-// ============================================================
 
 function renderDesactivadosAdmin() {
   const container = document.getElementById('desactivadosAdminList');
@@ -983,9 +1243,165 @@ function restaurarInqAdmin(usuarioId, nombre) {
   showToast(`${nombre} restaurado correctamente`, 'success');
 }
 
-// Stub para compatibilidad (propiedades/consultas eliminadas)
-function renderPropiedades() {}
+
+// ============================================================
+// PROPIEDADES — Render, Modal y Lógica
+// ============================================================
+
+function renderPropiedades() { renderPropiedadesAdmin(); }
+
+function renderPropiedadesAdmin() {
+  const props   = getPropiedadesByAdmin(adminIdActual);
+  const search  = (document.getElementById('searchPropiedad')?.value || '').toLowerCase();
+  const filtEst = document.getElementById('filterPropEstado')?.value || 'todos';
+  const tbody   = document.getElementById('propiedadTbody');
+  if (!tbody) { setupPropiedadesAdmin(); return; }
+  setupPropiedadesAdmin();
+
+  const estadoBadge = {
+    disponible: '<span class="badge badge--success">Disponible</span>',
+    reservada:  '<span class="badge badge--warning">Reservada</span>',
+    ocupada:    '<span class="badge badge--danger">Ocupada</span>',
+  };
+
+  const filtered = props.filter(p => {
+    const matchSearch = !search ||
+      p.nombre.toLowerCase().includes(search) ||
+      (p.direccion || '').toLowerCase().includes(search) ||
+      (p.ciudad || '').toLowerCase().includes(search);
+    const matchEst = filtEst === 'todos' || p.estado === filtEst;
+    return matchSearch && matchEst;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:var(--space-6);">Sin propiedades${search ? ' que coincidan' : ''}. Creá una nueva.</td></tr>`;
+    initIcons();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td><strong>${p.nombre}</strong></td>
+      <td>${p.piso || '—'}</td>
+      <td>${p.direccion || '—'}</td>
+      <td>${[p.ciudad, p.provincia].filter(Boolean).join(', ') || '—'}</td>
+      <td>${estadoBadge[p.estado] || p.estado}</td>
+      <td style="font-size:0.8rem;color:var(--text-muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${p.observaciones || ''}">${p.observaciones || '—'}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn--sm btn--ghost" onclick="openPropiedadModal('${p.id}')" title="Editar">
+            <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+          </button>
+          ${p.estado === 'disponible'
+            ? `<button class="btn btn--sm btn--ghost" onclick="confirmarEliminarPropiedad('${p.id}','${p.nombre.replace(/'/g, "\\'")}') " title="Eliminar" style="color:var(--color-danger);">
+                <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+               </button>`
+            : `<span style="font-size:0.72rem;color:var(--text-muted);padding:2px 6px;" title="No se puede eliminar: ${p.estado}">🔒</span>`
+          }
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  initIcons();
+}
+
+function setupPropiedadesAdmin() {
+  // Use onclick to avoid duplicate listeners
+  const btnNew = document.getElementById('btnNuevaPropiedad');
+  if (btnNew) btnNew.onclick = () => openPropiedadModal(null);
+  const searchEl = document.getElementById('searchPropiedad');
+  if (searchEl) searchEl.oninput = renderPropiedadesAdmin;
+  const filterEl = document.getElementById('filterPropEstado');
+  if (filterEl) filterEl.onchange = renderPropiedadesAdmin;
+  const btnSave = document.getElementById('btnGuardarPropiedad');
+  if (btnSave) btnSave.onclick = () => {
+    const id = document.getElementById('btnGuardarPropiedad').getAttribute('data-id');
+    guardarPropiedad(id || null);
+  };
+}
+
+function openPropiedadModal(id) {
+  const prop = id ? getPropiedadById(id) : null;
+  document.getElementById('modalPropiedadTitle').textContent = prop ? 'Editar Propiedad' : 'Nueva Propiedad';
+  document.getElementById('propNombre').value       = prop?.nombre       || '';
+  document.getElementById('propPiso').value         = prop?.piso         || '';
+  document.getElementById('propEstado').value       = prop?.estado       || 'disponible';
+  document.getElementById('propDireccion').value    = prop?.direccion    || '';
+  document.getElementById('propCiudad').value       = prop?.ciudad       || '';
+  document.getElementById('propProvincia').value    = prop?.provincia    || '';
+  document.getElementById('propObservaciones').value = prop?.observaciones || '';
+  document.getElementById('btnGuardarPropiedad').setAttribute('data-id', id || '');
+  openModal('modalPropiedad');
+}
+
+function guardarPropiedad(id) {
+  const nombre = document.getElementById('propNombre').value.trim();
+  if (!nombre) { showToast('El nombre es requerido', 'warning'); return; }
+
+  const data = {
+    nombre,
+    piso:          document.getElementById('propPiso').value.trim(),
+    estado:        document.getElementById('propEstado').value,
+    direccion:     document.getElementById('propDireccion').value.trim(),
+    ciudad:        document.getElementById('propCiudad').value.trim(),
+    provincia:     document.getElementById('propProvincia').value.trim(),
+    observaciones: document.getElementById('propObservaciones').value.trim(),
+    adminId:       adminIdActual,
+    adminNombre:   sesionAdmin?.nombre || 'Admin',
+  };
+
+  if (id) {
+    const res = updatePropiedad(id, data);
+    if (res?.error) { showToast(res.error, 'danger'); return; }
+    showToast('Propiedad actualizada', 'success');
+  } else {
+    const res = createPropiedad(data);
+    if (res?.error) { showToast(res.error, 'danger'); return; }
+    showToast('Propiedad creada', 'success');
+  }
+  closeModal('modalPropiedad');
+  renderPropiedadesAdmin();
+}
+
+function confirmarEliminarPropiedad(id, nombre) {
+  if (!confirm(`¿Eliminar la propiedad "${nombre}"?`)) return;
+  const res = deletePropiedad(id);
+  if (res?.error) { showToast(res.error, 'danger'); return; }
+  showToast('Propiedad eliminada', 'success');
+  renderPropiedadesAdmin();
+}
+
+
+// ── Toggle visibilidad de contraseña ──
+function togglePassVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon  = document.getElementById(iconId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    if (icon) icon.setAttribute('data-lucide', 'eye');
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 function renderConsultasAdmin() {}
+
+// -- Toggle visibilidad contraseña en modo edición de inquilino --
+function togglePassDisplay() {
+  const input = document.getElementById('inqPasswordDisplay');
+  const btn   = document.getElementById('btnTogglePassDisplay');
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (btn) btn.innerHTML = '<i data-lucide="eye-off" style="width:15px;height:15px;"></i> Ocultar';
+  } else {
+    input.type = 'password';
+    if (btn) btn.innerHTML = '<i data-lucide="eye" style="width:15px;height:15px;"></i> Ver';
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
 
 
 // ============================================================

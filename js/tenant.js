@@ -111,7 +111,7 @@ function navigateToTenant(sectionId) {
   switch (sectionId) {
     case 'inicio':       renderTenantInicio();        break;
     case 'pagos':        renderTenantPagos();         break;
-    case 'comprobantes': renderComprobantes();        break;
+    case 'comprobantes': navigateToTenant('pagos'); switchTenantPagosTab('comprobantes'); return;
     case 'expensas':     renderExpensasTenant();      break;
     case 'servicios':    renderServiciosPersonales(); break;
     case 'reclamos':     renderReclamosTenant();      break;
@@ -208,7 +208,7 @@ function renderTenantInicio() {
           </span>
         </div>
         <div class="next-payment-actions">
-          <button class="btn btn--primary" onclick="navigateToTenant('comprobantes')">
+          <button class="btn btn--primary" onclick="navigateToTenant('pagos'); switchTenantPagosTab('comprobantes');">
             <i data-lucide="upload" style="width:15px;height:15px;"></i> Adjuntar comprobante
           </button>
           <button class="btn btn--secondary" onclick="navigateToTenant('pagos')">
@@ -390,66 +390,211 @@ function renderTenantInicio() {
 }
 
 // ============================================================
-// PAGOS
+// PAGOS + COMPROBANTES (tabs unificados)
 // ============================================================
 
+let _tabPagosActual = 'historial';
+
 function renderTenantPagos() {
+  // Render todas las tabs al entrar
+  _renderTabHistorial();
+  _renderTabPendientes();
+  _renderTabRealizados();
+  _renderTabComprobantes();
+  switchTenantPagosTab(_tabPagosActual);
+  initIcons();
+}
+
+function switchTenantPagosTab(tab) {
+  _tabPagosActual = tab;
+  const tabs = ['historial', 'pendientes', 'realizados', 'comprobantes'];
+  tabs.forEach(t => {
+    const el  = document.getElementById('tabPagos-' + t);
+    const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el)  el.style.display  = (t === tab) ? 'block' : 'none';
+    if (btn) btn.className = (t === tab) ? 'btn btn--primary' : 'btn btn--secondary';
+  });
+}
+
+function _renderTabHistorial() {
   const tbody = document.getElementById('tenantPagosTbody');
   if (!tbody) return;
-
   const pagos = getPagosByInquilino(inquilinoActual.id);
-
   if (pagos.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">No tenés pagos registrados</td></tr>`;
     return;
   }
-
   tbody.innerHTML = pagos.map(p => `
     <tr>
       <td>${p.concepto}</td>
       <td>${formatearFecha(p.fecha)}</td>
       <td style="font-family:var(--font-mono);color:var(--color-success);">${formatearPesos(p.monto)}</td>
-      <td>${p.metodoPago}</td>
+      <td>${p.metodoPago || '—'}</td>
       <td>${badgePago(p.estado)}</td>
     </tr>
   `).join('');
 }
 
-// ============================================================
-// COMPROBANTES (simulados)
-// ============================================================
+function _renderTabPendientes() {
+  const container = document.getElementById('tenantPagosPendientesContainer');
+  if (!container) return;
+  const inq   = inquilinoActual;
+  const pagos = getPagosByInquilino(inq.id);
+  const pendientes = pagos.filter(p => p.estado === 'pendiente');
 
-function renderComprobantes() {
-  const uploader      = document.getElementById('comprobanteUploader');
-  const listContainer = document.getElementById('comprobantesList');
+  // Tarjeta del alquiler actual si no está pagado
+  let html = '';
 
-  renderComprobanteList(listContainer);
+  if (inq.estadoPago !== 'pagado') {
+    const { texto: tv, urgencia: uv } = textoVencimientoPago(inq.proximoVencimientoPago);
+    html += `
+      <div class="card" style="border-left:4px solid var(--color-warning);margin-bottom:var(--space-4);">
+        <div class="card__header">
+          <div>
+            <div class="card__title">💰 Alquiler del mes</div>
+            <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:3px;">${inq.unidad}</div>
+          </div>
+          <span class="badge badge--${uv}">${tv}</span>
+        </div>
+        <div style="font-family:var(--font-heading);font-size:1.75rem;font-weight:700;margin:var(--space-3) 0;">
+          ${formatearPesos(inq.valorAlquiler)}
+        </div>
+        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
+          <span style="font-size:0.8125rem;color:var(--text-muted);">Método: ${inq.metodoPago}</span>
+          <button class="btn btn--primary" onclick="abrirModalRegistrarPago()">
+            <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Registrar pago
+          </button>
+          <button class="btn btn--secondary" onclick="switchTenantPagosTab('comprobantes')">
+            <i data-lucide="upload" style="width:14px;height:14px;"></i> Adjuntar comprobante
+          </button>
+        </div>
+      </div>
+    `;
+  }
 
-  uploader?.addEventListener('click', () => {
+  // Otros pagos pendientes registrados
+  if (pendientes.length > 0) {
+    html += pendientes.map(p => `
+      <div class="card" style="margin-bottom:var(--space-3);">
+        <div class="card__header">
+          <span class="card__title">${p.concepto}</span>
+          ${badgePago(p.estado)}
+        </div>
+        <div style="font-family:var(--font-mono);font-size:1.25rem;font-weight:700;margin:var(--space-2) 0;">${formatearPesos(p.monto)}</div>
+        <div style="font-size:0.8125rem;color:var(--text-muted);">Registrado el ${formatearFecha(p.fecha)}</div>
+      </div>
+    `).join('');
+  }
+
+  if (!html) {
+    html = `
+      <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="check-circle-2" style="width:28px;height:28px;"></i></div>
+        <p class="empty-state-title" style="color:var(--color-success);">¡Todo al día!</p>
+        <p class="empty-state-text">No tenés pagos pendientes en este momento.</p>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  initIcons();
+}
+
+function _renderTabRealizados() {
+  const container = document.getElementById('tenantPagosRealizadosContainer');
+  if (!container) return;
+  const pagos = getPagosByInquilino(inquilinoActual.id)
+    .filter(p => p.estado === 'acreditado' || p.estado === 'pagado');
+
+  if (pagos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="receipt" style="width:28px;height:28px;"></i></div>
+        <p class="empty-state-title">Sin pagos realizados</p>
+      </div>
+    `;
+    initIcons();
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="table-wrapper">
+      <table class="table">
+        <thead><tr><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr></thead>
+        <tbody>
+          ${pagos.map(p => `
+            <tr>
+              <td>${p.concepto}</td>
+              <td>${formatearFecha(p.fecha)}</td>
+              <td style="font-family:var(--font-mono);color:var(--color-success);">${formatearPesos(p.monto)}</td>
+              <td>${p.metodoPago || '—'}</td>
+              <td>${badgePago(p.estado)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function _renderTabComprobantes() {
+  _setupComprobanteUploader();
+  renderComprobanteList(document.getElementById('comprobantesList'));
+}
+
+function _setupComprobanteUploader() {
+  const uploader = document.getElementById('comprobanteUploader');
+  if (!uploader || uploader.dataset.bound) return;
+  uploader.dataset.bound = '1';
+
+  uploader.addEventListener('click', () => {
     const input = document.createElement('input');
-    input.type = 'file';
+    input.type   = 'file';
     input.accept = '.pdf,.jpg,.jpeg,.png';
-
     input.addEventListener('change', () => {
-      if (input.files?.[0]) {
-        const file = input.files[0];
-        const kb   = Math.round(file.size / 1024);
-        const ext  = file.name.split('.').pop().toLowerCase();
+      if (!input.files?.[0]) return;
+      const file = input.files[0];
+      const kb   = Math.round(file.size / 1024);
+      const ext  = file.name.split('.').pop().toLowerCase();
+      const mes  = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
 
-        createComprobante({
+      // 1. Crear el comprobante
+      const comp = createComprobante({
+        inquilinoId:     inquilinoActual.id,
+        inquilinoNombre: `${inquilinoActual.nombre} ${inquilinoActual.apellido}`,
+        adminId:         inquilinoActual.adminId,
+        nombre:          file.name,
+        tipo:            ext === 'pdf' ? 'pdf' : 'imagen',
+        tamaño:          kb > 1000 ? `${(kb/1000).toFixed(1)} MB` : `${kb} KB`,
+        concepto:        `Alquiler ${mes}`,
+      });
+
+      // 2. Crear el pago asociado (estado pendiente de verificación)
+      const concepto = `Alquiler ${mes}`;
+      const pagosExistentes = getPagosByInquilino(inquilinoActual.id);
+      const yaExiste = pagosExistentes.some(p =>
+        p.concepto === concepto && p.estado === 'pendiente'
+      );
+      if (!yaExiste) {
+        createPago({
           inquilinoId:     inquilinoActual.id,
           inquilinoNombre: `${inquilinoActual.nombre} ${inquilinoActual.apellido}`,
-          nombre:          file.name,
-          tipo:            ext === 'pdf' ? 'pdf' : 'imagen',
-          tamaño:          kb > 1000 ? `${(kb/1000).toFixed(1)} MB` : `${kb} KB`,
-          concepto:        `Alquiler ${new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`,
+          adminId:         inquilinoActual.adminId,
+          adminNombre:     inquilinoActual.adminNombre || '',
+          concepto,
+          monto:           inquilinoActual.valorAlquiler,
+          metodoPago:      inquilinoActual.metodoPago,
+          estado:          'pendiente',
+          comprobanteId:   comp.id,
         });
-
-        showToast('✔ Comprobante adjuntado — pendiente de verificación', 'success');
-        renderComprobanteList(listContainer);
       }
-    });
 
+      showToast('✔ Comprobante adjuntado — pago registrado como pendiente de verificación', 'success');
+      renderComprobanteList(document.getElementById('comprobantesList'));
+      // Actualizar también las otras tabs
+      _renderTabHistorial();
+      _renderTabPendientes();
+    });
     input.click();
   });
 }
@@ -471,7 +616,7 @@ function renderComprobanteList(container) {
   }
 
   container.innerHTML = `
-    <div class="comprobante-list">
+    <div class="comprobante-list" style="margin-top:var(--space-4);">
       ${comps.map(c => `
         <div class="comprobante-item">
           <div class="comprobante-file-icon">
@@ -490,6 +635,119 @@ function renderComprobanteList(container) {
     </div>
   `;
   initIcons();
+}
+
+// ── Modal: registrar pago de alquiler manualmente ──
+function abrirModalRegistrarPago() {
+  // Crear modal dinámico si no existe
+  let overlay = document.getElementById('modalRegistrarPago');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'modalRegistrarPago';
+    overlay.style.cssText = 'display:none;';
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:480px;" onclick="event.stopPropagation()">
+        <div class="modal__header">
+          <h3 class="modal__title">💰 Registrar pago de alquiler</h3>
+          <button class="modal__close" onclick="closeModal('modalRegistrarPago')">
+            <i data-lucide="x" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+        <div style="padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);">
+          <div class="form-group">
+            <label class="form-label">Concepto</label>
+            <input type="text" class="form-input" id="rpConcepto" readonly
+              style="background:var(--bg-elevated);" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+            <div class="form-group">
+              <label class="form-label">Monto ($)</label>
+              <input type="number" class="form-input" id="rpMonto" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha de pago</label>
+              <input type="date" class="form-input" id="rpFecha" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Método de pago</label>
+            <select class="form-select" id="rpMetodo">
+              <option value="Transferencia">Transferencia</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Débito automático">Débito automático</option>
+            </select>
+          </div>
+          <p style="font-size:0.8125rem;color:var(--text-muted);background:var(--bg-elevated);padding:var(--space-3);border-radius:var(--radius-md);">
+            <i data-lucide="info" style="width:13px;height:13px;display:inline;margin-right:4px;"></i>
+            El pago quedará como <strong>pendiente</strong> hasta que el administrador lo verifique.
+            También podés adjuntar un comprobante desde la pestaña Comprobantes.
+          </p>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" onclick="closeModal('modalRegistrarPago')">Cancelar</button>
+          <button class="btn btn--primary" onclick="confirmarRegistrarPago()">
+            <i data-lucide="check" style="width:14px;height:14px;"></i> Confirmar pago
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  // Prellenar valores
+  const mes = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const mesCapital = mes.charAt(0).toUpperCase() + mes.slice(1);
+  document.getElementById('rpConcepto').value = `Alquiler ${mesCapital}`;
+  document.getElementById('rpMonto').value    = inquilinoActual.valorAlquiler;
+  document.getElementById('rpFecha').value    = new Date().toISOString().split('T')[0];
+  document.getElementById('rpMetodo').value   = inquilinoActual.metodoPago || 'Transferencia';
+
+  openModal('modalRegistrarPago');
+  initIcons();
+}
+
+function confirmarRegistrarPago() {
+  const concepto = document.getElementById('rpConcepto').value;
+  const monto    = parseFloat(document.getElementById('rpMonto').value);
+  const fecha    = document.getElementById('rpFecha').value;
+  const metodo   = document.getElementById('rpMetodo').value;
+
+  if (!monto || !fecha) {
+    showToast('Completá monto y fecha', 'warning');
+    return;
+  }
+
+  // Evitar duplicados del mismo mes
+  const pagosExistentes = getPagosByInquilino(inquilinoActual.id);
+  const yaExiste = pagosExistentes.some(p =>
+    p.concepto === concepto && (p.estado === 'pendiente' || p.estado === 'acreditado')
+  );
+  if (yaExiste) {
+    showToast('Ya existe un pago registrado para este período', 'warning');
+    closeModal('modalRegistrarPago');
+    return;
+  }
+
+  createPago({
+    inquilinoId:     inquilinoActual.id,
+    inquilinoNombre: `${inquilinoActual.nombre} ${inquilinoActual.apellido}`,
+    adminId:         inquilinoActual.adminId,
+    adminNombre:     inquilinoActual.adminNombre || '',
+    concepto,
+    monto,
+    metodoPago:      metodo,
+    fecha,
+    estado:          'pendiente',
+  });
+
+  showToast('✔ Pago registrado — pendiente de verificación por el administrador', 'success');
+  closeModal('modalRegistrarPago');
+  // Refrescar tabs
+  _renderTabHistorial();
+  _renderTabPendientes();
+  _renderTabRealizados();
 }
 
 // ============================================================

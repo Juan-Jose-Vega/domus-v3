@@ -48,14 +48,11 @@
         <i data-lucide="home" class="nav-item-icon"></i>
         <span class="nav-item-text">Mi Panel</span>
       </div>
-      <div class="nav-item" data-section="pagos" data-tooltip="Mis Pagos">
+      <div class="nav-item" data-section="pagos" data-tooltip="Pagos y Comprobantes">
         <i data-lucide="receipt" class="nav-item-icon"></i>
-        <span class="nav-item-text">Mis Pagos</span>
+        <span class="nav-item-text">Pagos</span>
       </div>
-      <div class="nav-item" data-section="comprobantes" data-tooltip="Comprobantes">
-        <i data-lucide="file-up" class="nav-item-icon"></i>
-        <span class="nav-item-text">Comprobantes</span>
-      </div>
+
       <div class="nav-item" data-section="expensas" data-tooltip="Expensas">
         <i data-lucide="building-2" class="nav-item-icon"></i>
         <span class="nav-item-text">Expensas</span>
@@ -161,37 +158,67 @@
             <div id="miniAvisosList" style="margin-top:var(--space-2);"></div>
           </div>
         </div>
+        <!-- Contacto admin -->
+        <div style="margin-top:var(--space-5);" id="tenantAdminContact"></div>
       </section>
 
       <!-- ================================================ PAGOS ================================================ -->
+      <!-- ================================================ PAGOS + COMPROBANTES ================================================ -->
       <section class="content-section" id="section-pagos">
         <div class="section-header">
-          <div><h2 class="section-title">Mis Pagos</h2><p class="section-subtitle">Historial completo de tus pagos</p></div>
+          <div><h2 class="section-title">Mis Pagos</h2><p class="section-subtitle">Historial, pendientes y comprobantes</p></div>
         </div>
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr>
-            </thead>
-            <tbody id="tenantPagosTbody"></tbody>
-          </table>
-        </div>
-      </section>
 
-      <!-- ================================================ COMPROBANTES ================================================ -->
-      <section class="content-section" id="section-comprobantes">
-        <div class="section-header">
-          <div><h2 class="section-title">Comprobantes</h2><p class="section-subtitle">Adjuntá tus comprobantes de pago</p></div>
+        <!-- Tabs -->
+        <div class="filters-bar" style="margin-bottom:var(--space-4);">
+          <button class="btn btn--primary" id="tabBtnHistorial" onclick="switchTenantPagosTab('historial')">
+            <i data-lucide="history" style="width:14px;height:14px;"></i> Historial
+          </button>
+          <button class="btn btn--secondary" id="tabBtnPendientes" onclick="switchTenantPagosTab('pendientes')">
+            <i data-lucide="clock" style="width:14px;height:14px;"></i> Pendientes
+          </button>
+          <button class="btn btn--secondary" id="tabBtnRealizados" onclick="switchTenantPagosTab('realizados')">
+            <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Realizados
+          </button>
+          <button class="btn btn--secondary" id="tabBtnComprobantes" onclick="switchTenantPagosTab('comprobantes')">
+            <i data-lucide="file-up" style="width:14px;height:14px;"></i> Comprobantes
+          </button>
         </div>
-        <div style="max-width:600px;">
-          <div class="comprobante-uploader" id="comprobanteUploader">
-            <div class="comprobante-uploader-icon">
-              <i data-lucide="upload-cloud" style="width:28px;height:28px;"></i>
-            </div>
-            <div class="comprobante-uploader-text">Hacer click para adjuntar comprobante</div>
-            <div class="comprobante-uploader-hint">PDF, JPG o PNG — máximo 5 MB</div>
+
+        <!-- TAB: Historial completo -->
+        <div id="tabPagos-historial">
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th></tr>
+              </thead>
+              <tbody id="tenantPagosTbody"></tbody>
+            </table>
           </div>
-          <div id="comprobantesList"></div>
+        </div>
+
+        <!-- TAB: Pendientes -->
+        <div id="tabPagos-pendientes" style="display:none;">
+          <div id="tenantPagosPendientesContainer"></div>
+        </div>
+
+        <!-- TAB: Realizados -->
+        <div id="tabPagos-realizados" style="display:none;">
+          <div id="tenantPagosRealizadosContainer"></div>
+        </div>
+
+        <!-- TAB: Comprobantes -->
+        <div id="tabPagos-comprobantes" style="display:none;">
+          <div style="max-width:640px;">
+            <div class="comprobante-uploader" id="comprobanteUploader">
+              <div class="comprobante-uploader-icon">
+                <i data-lucide="upload-cloud" style="width:28px;height:28px;"></i>
+              </div>
+              <div class="comprobante-uploader-text">Hacer click para adjuntar comprobante</div>
+              <div class="comprobante-uploader-hint">PDF, JPG o PNG — máximo 5 MB</div>
+            </div>
+            <div id="comprobantesList"></div>
+          </div>
         </div>
       </section>
 

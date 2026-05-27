@@ -29,6 +29,7 @@ const STORAGE_KEYS = {
   NOTIFICACIONES:        'renta_notificaciones',
   COMPROBANTES:          'renta_comprobantes',
   ACTIVIDAD:             'renta_actividad',
+  PROPIEDADES:           'renta_propiedades',
   SESION_ACTUAL:         'renta_sesion',
   USUARIOS_DESACTIVADOS: 'renta_usuarios_desactivados',
   RECLAMOS_SA:           'renta_reclamos_sa',
@@ -226,6 +227,14 @@ function initStorage() {
   storageSet(STORAGE_KEYS.AVISOS,         avisos);
   storageSet(STORAGE_KEYS.NOTIFICACIONES, notificaciones);
   storageSet(STORAGE_KEYS.COMPROBANTES,   comprobantes);
+
+  storageSet(STORAGE_KEYS.PROPIEDADES, [
+    { id: 'prop001', adminId: 'adm001', nombre: 'Depto 2A', piso: '2', direccion: 'Av. Corrientes 1234', ciudad: 'Buenos Aires', provincia: 'Buenos Aires', observaciones: '', estado: 'ocupada' },
+    { id: 'prop002', adminId: 'adm001', nombre: 'Depto 3B', piso: '3', direccion: 'Av. Corrientes 1234', ciudad: 'Buenos Aires', provincia: 'Buenos Aires', observaciones: '', estado: 'ocupada' },
+    { id: 'prop003', adminId: 'adm001', nombre: 'Depto 1C', piso: '1', direccion: 'Av. Corrientes 1234', ciudad: 'Buenos Aires', provincia: 'Buenos Aires', observaciones: '', estado: 'ocupada' },
+    { id: 'prop004', adminId: 'adm001', nombre: 'Depto 4A', piso: '4', direccion: 'Av. Corrientes 1234', ciudad: 'Buenos Aires', provincia: 'Buenos Aires', observaciones: 'Terraza propia', estado: 'disponible' },
+  ]);
+
   storageSet(STORAGE_KEYS.ACTIVIDAD,      actividad);
   storageSet(STORAGE_KEYS.EXPENSAS,       []);
   storageSet(STORAGE_KEYS.SERVICIOS_PERSONALES, []);
@@ -530,6 +539,7 @@ function addNotificacion(data) {
 
 function getComprobantes()                      { return storageGet(STORAGE_KEYS.COMPROBANTES, []); }
 function getComprobantesByInquilino(inquilinoId){ return getComprobantes().filter(c => c.inquilinoId === inquilinoId); }
+function getComprobantesByAdmin(adminId)        { return getComprobantes().filter(c => c.adminId === adminId); }
 
 function createComprobante(data) {
   const comps = getComprobantes();
@@ -605,6 +615,108 @@ function deleteServicioPersonal(id) {
   storageSet(STORAGE_KEYS.SERVICIOS_PERSONALES,
     getServiciosPersonales().filter(s => s.id !== id)
   );
+}
+
+// ============================================================
+// CRUD — PROPIEDADES
+// ============================================================
+
+function getPropiedades() {
+  return storageGet(STORAGE_KEYS.PROPIEDADES, []);
+}
+
+function getPropiedadesByAdmin(adminId) {
+  return getPropiedades().filter(p => p.adminId === adminId);
+}
+
+function getPropiedadById(id) {
+  return getPropiedades().find(p => p.id === id) || null;
+}
+
+/**
+ * Normaliza nombre para comparación de duplicados (minúsculas, sin espacios extra).
+ */
+function _normalizarNombrePropiedad(nombre) {
+  return nombre.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function createPropiedad(data) {
+  const propiedades = getPropiedades();
+  const nombreNorm  = _normalizarNombrePropiedad(data.nombre || '');
+
+  // Verificar duplicado por nombre + adminId
+  const duplicado = propiedades.find(p =>
+    p.adminId === data.adminId &&
+    _normalizarNombrePropiedad(p.nombre) === nombreNorm
+  );
+  if (duplicado) {
+    return { error: `La propiedad "${duplicado.nombre}" ya existe.` };
+  }
+
+  const nueva = {
+    id:           'prop' + Date.now(),
+    adminId:      data.adminId,
+    nombre:       data.nombre.trim(),
+    piso:         data.piso || '',
+    direccion:    data.direccion || '',
+    ciudad:       data.ciudad || '',
+    provincia:    data.provincia || '',
+    observaciones: data.observaciones || '',
+    estado:       data.estado || 'disponible',
+  };
+  propiedades.unshift(nueva);
+  storageSet(STORAGE_KEYS.PROPIEDADES, propiedades);
+  logActividad(data.adminNombre || 'Admin', 'Creó una propiedad', nueva.nombre);
+  return nueva;
+}
+
+function updatePropiedad(id, data) {
+  const propiedades = getPropiedades();
+  const prop        = propiedades.find(p => p.id === id);
+  if (!prop) return { error: 'Propiedad no encontrada' };
+
+  // Si cambia el nombre, verificar duplicado
+  if (data.nombre) {
+    const nombreNorm = _normalizarNombrePropiedad(data.nombre);
+    const duplicado  = propiedades.find(p =>
+      p.id !== id &&
+      p.adminId === prop.adminId &&
+      _normalizarNombrePropiedad(p.nombre) === nombreNorm
+    );
+    if (duplicado) {
+      return { error: `Ya existe una propiedad con ese nombre: "${duplicado.nombre}".` };
+    }
+  }
+
+  const actualizadas = propiedades.map(p => p.id === id ? { ...p, ...data } : p);
+  storageSet(STORAGE_KEYS.PROPIEDADES, actualizadas);
+  return actualizadas.find(p => p.id === id);
+}
+
+function deletePropiedad(id) {
+  // Solo eliminar si está disponible
+  const prop = getPropiedadById(id);
+  if (!prop) return { error: 'Propiedad no encontrada' };
+  if (prop.estado !== 'disponible') {
+    return { error: `No se puede eliminar: la propiedad está ${prop.estado}.` };
+  }
+  storageSet(STORAGE_KEYS.PROPIEDADES, getPropiedades().filter(p => p.id !== id));
+  return { ok: true };
+}
+
+/**
+ * Ocupa una propiedad al crear/editar inquilino.
+ * estado: 'ocupada' | 'reservada'
+ */
+function ocuparPropiedad(propiedadId, estado = 'ocupada') {
+  updatePropiedad(propiedadId, { estado });
+}
+
+/**
+ * Libera una propiedad (vuelve a 'disponible').
+ */
+function liberarPropiedad(propiedadId) {
+  updatePropiedad(propiedadId, { estado: 'disponible' });
 }
 
 // ============================================================
@@ -786,7 +898,7 @@ function migrarServiciosLegacy() {
 // INICIALIZACIÓN
 // ============================================================
 
-const SEED_VERSION = 'v4';
+const SEED_VERSION = 'v5';
 if (storageGet('renta_seed_version') !== SEED_VERSION) {
   Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
   localStorage.removeItem('renta_seed_version');
@@ -794,4 +906,4 @@ if (storageGet('renta_seed_version') !== SEED_VERSION) {
 initStorage();
 storageSet('renta_seed_version', SEED_VERSION);
 migrarServiciosLegacy();
-console.log('[Storage v4-fusionado] Módulo listo. 3 roles + expensas + servicios + reclamos_SA + contratos.');
+console.log('[Storage v5] Módulo listo. Roles + expensas + servicios + reclamos_SA + contratos + propiedades.');
